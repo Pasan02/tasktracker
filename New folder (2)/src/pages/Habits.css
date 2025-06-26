@@ -1,0 +1,517 @@
+/* Habits Page Styles */
+
+.habits-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.habits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.add-habit-button {
+  background: var(--primary-teal);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-habit-button:hover {
+  background: var(--primary-teal-dark);
+  transform: translateY(-1px);
+}
+
+.habits-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tab-button:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.tab-button.active {
+  color: var(--primary-teal);
+  background: var(--bg-secondary);
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-teal);
+}
+
+.tab-count {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tab-button.active .tab-count {
+  background: var(--primary-teal);
+  color: white;
+}
+
+.habits-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 32px;
+}
+
+.habits-left {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.habits-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Card Styles */
+.habits-progress-card,
+.daily-habits-card,
+.timer-card,
+.reminder-card,
+.inspiration-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.all-habits-link,
+.add-habits-link {
+  color: var(--primary-teal);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.add-habit-btn {
+  background: var(--primary-teal);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-habit-btn:hover {
+  background: var(--primary-teal-dark);
+  transform: scale(1.05);
+}
+
+/* Progress Chart Styles */
+.progress-chart {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Daily Habits Styles */
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.habit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.habit-checkbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.habit-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #E5E7EB;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.habit-checkbox input[type="checkbox"]:checked {
+  background: var(--primary-teal);
+  border-color: var(--primary-teal);
+}
+
+.habit-checkbox input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.habit-content {
+  flex: 1;
+}
+
+.habit-title {
+  font-size: 16px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.habit-title.completed {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.habit-streak {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.streak-icon {
+  font-size: 14px;
+}
+
+/* Timer Card Styles */
+.activity-dropdown {
+  position: relative;
+}
+
+.activity-selector {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timer-display {
+  margin: 24px 0;
+}
+
+.timer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.timer-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.timer-btn:hover {
+  background: var(--primary-teal);
+  color: white;
+  border-color: var(--primary-teal);
+}
+
+.timer-time {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 120px;
+  text-align: center;
+}
+
+.start-timer-btn {
+  background: var(--primary-teal);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.start-timer-btn:hover {
+  background: var(--primary-teal-dark);
+}
+
+/* Reminder Card Styles */
+.reminder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.reminder-icon {
+  background: #FEF3C7;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D97706;
+}
+
+.reminder-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.more-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.more-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* Inspiration Card Styles */
+.inspiration-card {
+  background: linear-gradient(135deg, #1DD1A1, #10AC84);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-content {
+  position: relative;
+  z-index: 2;
+}
+
+.inspiration-text h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+.inspiration-image {
+  margin: 20px 0;
+  height: 80px;
+  position: relative;
+}
+
+.energy-illustration {
+  position: relative;
+  height: 100%;
+}
+
+.energy-elements {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 100%;
+}
+
+.energy-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  position: relative;
+  transform: rotate(-5deg);
+}
+
+.energy-book {
+  background: #FF6B6B;
+}
+
+.energy-laptop {
+  background: #4ECDC4;
+  transform: rotate(5deg);
+}
+
+.energy-plant {
+  background: #45B7D1;
+  transform: rotate(-8deg);
+}
+
+.energy-coffee {
+  background: #FFA07A;
+  transform: rotate(10deg);
+}
+
+.learn-more-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.learn-more-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .habits-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .habits-right {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .habits-page {
+    padding: 0 16px;
+  }
+  
+  .habits-tabs {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  
+  .tab-button {
+    white-space: nowrap;
+  }
+  
+  .habits-progress-card,
+  .daily-habits-card,
+  .timer-card,
+  .reminder-card,
+  .inspiration-card {
+    padding: 16px;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .timer-controls {
+    gap: 16px;
+  }
+  
+  .timer-time {
+    font-size: 28px;
+    min-width: 100px;
+  }
+}
