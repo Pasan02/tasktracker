@@ -1,15 +1,47 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { Sun, Moon, Bell, Search, User, Sparkles } from 'lucide-react'
+import { Sun, Moon, Bell, Search, User, Sparkles, Settings, LogOut, ChevronDown } from 'lucide-react'
 
 const Header = () => {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false)
+      }
+    }
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showUserMenu])
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)
     // Add dark mode logic here
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+    setShowUserMenu(false)
+  }
+
+  const handleProfileClick = () => {
+    navigate('/profile')
+    setShowUserMenu(false)
   }
 
   return (
@@ -86,16 +118,53 @@ const Header = () => {
           )}
         </div>
 
-        <div className="user-profile">
-          <div className="user-avatar">
-            {user?.avatar ? (
-              <img src={user.avatar} alt={user.firstName} className="avatar-img" />
-            ) : (
-              <div className="avatar-placeholder">
-                <User size={16} />
+        <div className="user-profile" ref={userMenuRef}>
+          <button 
+            className="user-profile-btn"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            title="Account menu"
+          >
+            <div className="user-avatar">
+              {user?.avatar ? (
+                <img src={user.avatar} alt={user.firstName} className="avatar-img" />
+              ) : (
+                <div className="avatar-placeholder">
+                  <User size={16} />
+                </div>
+              )}
+            </div>
+          </button>
+
+          {showUserMenu && (
+            <div className="user-menu-dropdown">
+              <div className="user-menu-header">
+                <div className="user-avatar-large">
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt={user.firstName} className="avatar-img" />
+                  ) : (
+                    <div className="avatar-placeholder">
+                      <User size={20} />
+                    </div>
+                  )}
+                </div>
+                <div className="user-details">
+                  <p className="user-full-name">{user?.firstName} {user?.lastName}</p>
+                  <p className="user-email">{user?.email}</p>
+                </div>
               </div>
-            )}
-          </div>
+              <div className="user-menu-divider"></div>
+              <div className="user-menu-items">
+                <button className="user-menu-item" onClick={handleProfileClick}>
+                  <Settings size={16} />
+                  <span>Account Settings</span>
+                </button>
+                <button className="user-menu-item logout" onClick={handleLogout}>
+                  <LogOut size={16} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

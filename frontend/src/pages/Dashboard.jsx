@@ -186,8 +186,7 @@ const Dashboard = () => {
                   <button className="task-delete">🗑️</button>
                 </div>
               </div>
-              
-              <button className="add-task-btn" onClick={openAddTaskModal}>
+              <button className="add-task-btn floating-add-btn" onClick={openAddTaskModal}>
                 <Plus size={16} />
               </button>
             </div>
@@ -249,8 +248,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              
-              <button className="add-habit-btn" onClick={openAddHabitModal}>
+              <button className="add-habit-btn floating-add-btn" onClick={openAddHabitModal}>
                 <Plus size={16} />
               </button>
             </div>

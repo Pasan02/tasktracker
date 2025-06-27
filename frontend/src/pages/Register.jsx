@@ -60,7 +60,7 @@ const Register = () => {
   }
 
   return (
-    <div className="auth-container">
+    <div className="auth-container register-container">
       <div className="auth-left">
         <div className="auth-hero">
           <div className="auth-hero-content">

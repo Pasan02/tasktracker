@@ -63,22 +63,17 @@ const Login = () => {
   }
 
   return (
-    <div className="auth-container">
-      <div className="auth-left">
+    <div className="auth-container login-container">
+      <div className="auth-left login-left">
         <div className="auth-hero">
           <div className="auth-hero-content">
             <h1 className="auth-hero-title">Welcome to Wellife</h1>
             <p className="auth-hero-subtitle">Manage your tasks and projects efficiently</p>
             
             <div className="auth-hero-image">
-              <div className="hero-mockup">
-                <div className="mockup-screen">
-                  <div className="mockup-header"></div>
-                  <div className="mockup-content">
-                    <div className="mockup-card teal"></div>
-                    <div className="mockup-card purple"></div>
-                    <div className="mockup-card yellow"></div>
-                  </div>
+              <div className="hero-mockup login-mockup">
+                <div className="mockup-workspace">
+                  <div className="workspace-overlay"></div>
                 </div>
                 <div className="mockup-elements">
                   <div className="floating-element element-1"></div>

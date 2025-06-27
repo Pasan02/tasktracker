@@ -26,25 +26,22 @@ function AppContent() {
   return (
     <Router>
       <div className="App">
-        {!isAuthenticated ? (
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          {!isAuthenticated ? (
             <Route path="*" element={<Navigate to="/login" />} />
-          </Routes>
-        ) : (
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/habits" element={<Habits />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="*" element={<Navigate to="/dashboard" />} />
-            </Routes>
-          </Layout>
-        )}
+          ) : (
+            <>
+              <Route path="/" element={<Layout><Dashboard /></Layout>} />
+              <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+              <Route path="/tasks" element={<Layout><Tasks /></Layout>} />
+              <Route path="/habits" element={<Layout><Habits /></Layout>} />
+              <Route path="/calendar" element={<Layout><Calendar /></Layout>} />
+              <Route path="/profile" element={<Layout><Profile /></Layout>} />
+            </>
+          )}
+        </Routes>
       </div>
     </Router>
   )
