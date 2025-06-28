@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"args": [],
+			"command": "cd backend && mvn clean package -DskipTests",
+			"group": "build",
+			"isBackground": false,
+			"label": "Build TaskTracker Backend",
+			"problemMatcher": [
+				"$maven"
+			],
+			"type": "shell"
+		}
+	]
+}

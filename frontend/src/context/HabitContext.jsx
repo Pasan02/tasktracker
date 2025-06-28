@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import habitService from '../services/habitService'
 
 const HabitContext = createContext()
 
@@ -14,64 +15,47 @@ export const HabitProvider = ({ children }) => {
   const [habits, setHabits] = useState([])
   const [habitCompletions, setHabitCompletions] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Load habits from localStorage
-    const savedHabits = localStorage.getItem('habits')
-    const savedCompletions = localStorage.getItem('habitCompletions')
-    
-    if (savedHabits) {
+    const fetchHabits = async () => {
       try {
-        setHabits(JSON.parse(savedHabits))
-      } catch (error) {
-        console.error('Error parsing saved habits:', error)
-      }
-    } else {
-      // Initialize with mock data
-      const mockHabits = [
-        {
-          id: 1,
-          title: 'Morning meditation',
-          description: 'Start the day with 10 minutes of mindfulness',
-          frequency: 'daily',
-          targetDays: [1, 2, 3, 4, 5, 6, 0], // All days
-          createdAt: new Date().toISOString(),
-          isActive: true
-        },
-        {
-          id: 2,
-          title: 'Write in journal',
-          description: 'Reflect on the day and write thoughts',
-          frequency: 'daily',
-          targetDays: [1, 2, 3, 4, 5, 6, 0], // All days
-          createdAt: new Date().toISOString(),
-          isActive: true
-        },
-        {
-          id: 3,
-          title: 'Exercise',
-          description: '30 minutes of physical activity',
-          frequency: 'weekly',
-          targetDays: [1, 3, 5], // Mon, Wed, Fri
-          createdAt: new Date().toISOString(),
-          isActive: true
+        setIsLoading(true)
+        // Fetch both habits and completions in parallel
+        const [habitsData, completionsData] = await Promise.all([
+          habitService.getAllHabits(),
+          habitService.getHabitCompletions()
+        ])
+        
+        setHabits(habitsData)
+        setHabitCompletions(completionsData)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching habits:', err)
+        setError('Failed to load habits')
+        
+        // Fallback to local storage if API fails
+        const savedHabits = localStorage.getItem('habits')
+        const savedCompletions = localStorage.getItem('habitCompletions')
+        
+        if (savedHabits) {
+          try { setHabits(JSON.parse(savedHabits)) } 
+          catch (error) { console.error('Error parsing saved habits:', error) }
         }
-      ]
-      setHabits(mockHabits)
-      localStorage.setItem('habits', JSON.stringify(mockHabits))
+        
+        if (savedCompletions) {
+          try { setHabitCompletions(JSON.parse(savedCompletions)) } 
+          catch (error) { console.error('Error parsing saved completions:', error) }
+        }
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    if (savedCompletions) {
-      try {
-        setHabitCompletions(JSON.parse(savedCompletions))
-      } catch (error) {
-        console.error('Error parsing saved completions:', error)
-      }
-    }
-    
-    setIsLoading(false)
+    fetchHabits()
   }, [])
 
+  // Save to localStorage as backup
   const saveHabits = (updatedHabits) => {
     localStorage.setItem('habits', JSON.stringify(updatedHabits))
   }
@@ -80,61 +64,81 @@ export const HabitProvider = ({ children }) => {
     localStorage.setItem('habitCompletions', JSON.stringify(updatedCompletions))
   }
 
-  const addHabit = (habitData) => {
-    const newHabit = {
-      id: Date.now(),
-      ...habitData,
-      createdAt: new Date().toISOString(),
-      isActive: true
+  const addHabit = async (habitData) => {
+    try {
+      const newHabit = await habitService.createHabit(habitData)
+      const updatedHabits = [...habits, newHabit]
+      setHabits(updatedHabits)
+      saveHabits(updatedHabits)
+      return newHabit
+    } catch (error) {
+      console.error('Error adding habit:', error)
+      setError('Failed to add habit')
+      throw error
     }
-    const updatedHabits = [...habits, newHabit]
-    setHabits(updatedHabits)
-    saveHabits(updatedHabits)
-    return newHabit
   }
 
-  const updateHabit = (habitId, updates) => {
-    const updatedHabits = habits.map(habit =>
-      habit.id === habitId ? { ...habit, ...updates } : habit
-    )
-    setHabits(updatedHabits)
-    saveHabits(updatedHabits)
-  }
-
-  const deleteHabit = (habitId) => {
-    const updatedHabits = habits.filter(habit => habit.id !== habitId)
-    const updatedCompletions = habitCompletions.filter(completion => completion.habitId !== habitId)
-    
-    setHabits(updatedHabits)
-    setHabitCompletions(updatedCompletions)
-    saveHabits(updatedHabits)
-    saveCompletions(updatedCompletions)
-  }
-
-  const markHabitComplete = (habitId, date = null) => {
-    const completionDate = date || new Date().toISOString().split('T')[0]
-    const existingCompletion = habitCompletions.find(
-      completion => completion.habitId === habitId && completion.date === completionDate
-    )
-
-    if (existingCompletion) {
-      // Already completed, remove completion
-      const updatedCompletions = habitCompletions.filter(
-        completion => !(completion.habitId === habitId && completion.date === completionDate)
+  const updateHabit = async (habitId, updates) => {
+    try {
+      const updatedHabit = await habitService.updateHabit(habitId, updates)
+      const updatedHabits = habits.map(habit =>
+        habit.id === habitId ? updatedHabit : habit
       )
+      setHabits(updatedHabits)
+      saveHabits(updatedHabits)
+      return updatedHabit
+    } catch (error) {
+      console.error('Error updating habit:', error)
+      setError('Failed to update habit')
+      throw error
+    }
+  }
+
+  const deleteHabit = async (habitId) => {
+    try {
+      await habitService.deleteHabit(habitId)
+      const updatedHabits = habits.filter(habit => habit.id !== habitId)
+      const updatedCompletions = habitCompletions.filter(completion => completion.habitId !== habitId)
+      
+      setHabits(updatedHabits)
       setHabitCompletions(updatedCompletions)
+      saveHabits(updatedHabits)
       saveCompletions(updatedCompletions)
-    } else {
-      // Mark as complete
-      const newCompletion = {
-        id: Date.now(),
-        habitId,
-        date: completionDate,
-        completedAt: new Date().toISOString()
+    } catch (error) {
+      console.error('Error deleting habit:', error)
+      setError('Failed to delete habit')
+      throw error
+    }
+  }
+
+  const markHabitComplete = async (habitId, date = null) => {
+    try {
+      const completionDate = date || new Date().toISOString().split('T')[0]
+      
+      // Check if already completed
+      const existingCompletion = habitCompletions.find(
+        completion => completion.habitId === habitId && completion.date === completionDate
+      )
+      
+      if (existingCompletion) {
+        // If already completed, we should delete it
+        await habitService.deleteHabitCompletion(existingCompletion.id)
+        const updatedCompletions = habitCompletions.filter(
+          completion => !(completion.habitId === habitId && completion.date === completionDate)
+        )
+        setHabitCompletions(updatedCompletions)
+        saveCompletions(updatedCompletions)
+      } else {
+        // If not completed, add a completion
+        const newCompletion = await habitService.markHabitComplete(habitId, completionDate)
+        const updatedCompletions = [...habitCompletions, newCompletion]
+        setHabitCompletions(updatedCompletions)
+        saveCompletions(updatedCompletions)
       }
-      const updatedCompletions = [...habitCompletions, newCompletion]
-      setHabitCompletions(updatedCompletions)
-      saveCompletions(updatedCompletions)
+    } catch (error) {
+      console.error('Error marking habit completion:', error)
+      setError('Failed to update habit completion')
+      throw error
     }
   }
 
@@ -145,41 +149,64 @@ export const HabitProvider = ({ children }) => {
   }
 
   const getHabitStreak = (habitId) => {
-    const today = new Date()
-    let streak = 0
-    let currentDate = new Date(today)
-
+    // Implementation of streak calculation
+    const habit = habits.find(h => h.id === habitId)
+    if (!habit) return 0
+    
+    // Get all completions for this habit
+    const completions = habitCompletions
+      .filter(completion => completion.habitId === habitId)
+      .map(completion => completion.date)
+      .sort()
+    
+    if (completions.length === 0) return 0
+    
+    // Calculate streak
+    const today = new Date().toISOString().split('T')[0]
+    let currentStreak = 0
+    let date = new Date(today)
+    
     while (true) {
-      const dateString = currentDate.toISOString().split('T')[0]
-      if (isHabitCompletedOnDate(habitId, dateString)) {
-        streak++
-        currentDate.setDate(currentDate.getDate() - 1)
-      } else {
+      const dateString = date.toISOString().split('T')[0]
+      
+      // If this date has a completion, increase streak
+      if (completions.includes(dateString)) {
+        currentStreak++
+        date.setDate(date.getDate() - 1)
+      } 
+      // If this is a day the habit should be completed but wasn't, break
+      else if (habit.targetDays.includes(date.getDay())) {
         break
       }
+      // If not a target day, just go back one more day
+      else {
+        date.setDate(date.getDate() - 1)
+      }
+      
+      // Don't go too far back (limit to 365 days)
+      if (currentStreak > 365) break
     }
-
-    return streak
+    
+    return currentStreak
   }
 
   const getTodaysHabits = () => {
-    const today = new Date().getDay() // 0 = Sunday, 1 = Monday, etc.
-    return habits.filter(habit => 
-      habit.isActive && habit.targetDays.includes(today)
-    )
+    const today = new Date()
+    const dayOfWeek = today.getDay()
+    
+    return habits.filter(habit => habit.targetDays.includes(dayOfWeek))
   }
 
-  const getHabitCompletionRate = (habitId, days = 30) => {
-    const endDate = new Date()
-    const startDate = new Date()
-    startDate.setDate(endDate.getDate() - days)
-
+  const getHabitCompletionRate = (habitId, startDate, endDate) => {
+    const habit = habits.find(h => h.id === habitId)
+    if (!habit) return 0
+    
+    startDate = startDate || new Date(new Date().setDate(new Date().getDate() - 30))
+    endDate = endDate || new Date()
+    
     let totalDays = 0
     let completedDays = 0
-    const habit = habits.find(h => h.id === habitId)
-
-    if (!habit) return 0
-
+    
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const dayOfWeek = d.getDay()
       if (habit.targetDays.includes(dayOfWeek)) {
@@ -197,6 +224,7 @@ export const HabitProvider = ({ children }) => {
     habits,
     habitCompletions,
     isLoading,
+    error,
     addHabit,
     updateHabit,
     deleteHabit,

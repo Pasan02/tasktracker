@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import taskService from '../services/taskService'
 
 const TaskContext = createContext()
 
@@ -13,101 +14,81 @@ export const useTask = () => {
 export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Load tasks from localStorage
-    const savedTasks = localStorage.getItem('tasks')
-    if (savedTasks) {
+    const fetchTasks = async () => {
       try {
-        setTasks(JSON.parse(savedTasks))
-      } catch (error) {
-        console.error('Error parsing saved tasks:', error)
-      }
-    } else {
-      // Initialize with mock data
-      const mockTasks = [
-        {
-          id: 1,
-          title: 'Prepare presentation slides',
-          description: 'Finalize the quarterly report presentation for tomorrow\'s client meeting',
-          status: 'todo',
-          priority: 'high',
-          category: 'work',
-          dueDate: '2025-06-27',
-          dueTime: '14:00',
-          createdAt: new Date().toISOString(),
-          completedAt: null
-        },
-        {
-          id: 2,
-          title: 'Review marketing materials',
-          description: 'Check the new campaign materials for approval',
-          status: 'in-progress',
-          priority: 'medium',
-          category: 'work',
-          dueDate: '2025-06-28',
-          dueTime: '11:00',
-          createdAt: new Date().toISOString(),
-          completedAt: null
-        },
-        {
-          id: 3,
-          title: 'Team meeting prep',
-          description: 'Prepare agenda and materials for weekly team sync',
-          status: 'todo',
-          priority: 'low',
-          category: 'work',
-          dueDate: '2025-06-29',
-          dueTime: '15:00',
-          createdAt: new Date().toISOString(),
-          completedAt: null
+        setIsLoading(true)
+        const data = await taskService.getAllTasks()
+        setTasks(data)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching tasks:', err)
+        setError('Failed to load tasks')
+        // Fallback to local storage if API fails
+        const savedTasks = localStorage.getItem('tasks')
+        if (savedTasks) {
+          try {
+            setTasks(JSON.parse(savedTasks))
+          } catch (error) {
+            console.error('Error parsing saved tasks:', error)
+          }
         }
-      ]
-      setTasks(mockTasks)
-      localStorage.setItem('tasks', JSON.stringify(mockTasks))
+      } finally {
+        setIsLoading(false)
+      }
     }
-    setIsLoading(false)
+
+    fetchTasks()
   }, [])
 
+  // Save to localStorage as backup
   const saveTasks = (updatedTasks) => {
     localStorage.setItem('tasks', JSON.stringify(updatedTasks))
   }
 
-  const addTask = (taskData) => {
-    const newTask = {
-      id: Date.now(),
-      ...taskData,
-      status: 'todo',
-      createdAt: new Date().toISOString(),
-      completedAt: null
+  const addTask = async (taskData) => {
+    try {
+      const newTask = await taskService.createTask(taskData)
+      const updatedTasks = [...tasks, newTask]
+      setTasks(updatedTasks)
+      saveTasks(updatedTasks)
+      return newTask
+    } catch (error) {
+      console.error('Error adding task:', error)
+      setError('Failed to add task')
+      throw error
     }
-    const updatedTasks = [...tasks, newTask]
-    setTasks(updatedTasks)
-    saveTasks(updatedTasks)
-    return newTask
   }
 
-  const updateTask = (taskId, updates) => {
-    const updatedTasks = tasks.map(task => {
-      if (task.id === taskId) {
-        const updatedTask = { ...task, ...updates }
-        if (updates.status === 'completed' && task.status !== 'completed') {
-          updatedTask.completedAt = new Date().toISOString()
-        } else if (updates.status !== 'completed' && task.status === 'completed') {
-          updatedTask.completedAt = null
-        }
-        return updatedTask
-      }
-      return task
-    })
-    setTasks(updatedTasks)
-    saveTasks(updatedTasks)
+  const updateTask = async (taskId, updates) => {
+    try {
+      const updatedTask = await taskService.updateTask(taskId, updates)
+      const updatedTasks = tasks.map(task => 
+        task.id === taskId ? updatedTask : task
+      )
+      setTasks(updatedTasks)
+      saveTasks(updatedTasks)
+      return updatedTask
+    } catch (error) {
+      console.error('Error updating task:', error)
+      setError('Failed to update task')
+      throw error
+    }
   }
 
-  const deleteTask = (taskId) => {
-    const updatedTasks = tasks.filter(task => task.id !== taskId)
-    setTasks(updatedTasks)
-    saveTasks(updatedTasks)
+  const deleteTask = async (taskId) => {
+    try {
+      await taskService.deleteTask(taskId)
+      const updatedTasks = tasks.filter(task => task.id !== taskId)
+      setTasks(updatedTasks)
+      saveTasks(updatedTasks)
+    } catch (error) {
+      console.error('Error deleting task:', error)
+      setError('Failed to delete task')
+      throw error
+    }
   }
 
   const getTasksByStatus = (status) => {
@@ -138,13 +119,10 @@ export const TaskProvider = ({ children }) => {
     return tasks.filter(task => task.status === 'completed').length
   }
 
-  const getTotalTasksCount = () => {
-    return tasks.length
-  }
-
   const value = {
     tasks,
     isLoading,
+    error,
     addTask,
     updateTask,
     deleteTask,
@@ -152,8 +130,7 @@ export const TaskProvider = ({ children }) => {
     getTasksByDate,
     getTodaysTasks,
     getUpcomingTasks,
-    getCompletedTasksCount,
-    getTotalTasksCount
+    getCompletedTasksCount
   }
 
   return (
