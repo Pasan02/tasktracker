@@ -46,13 +46,22 @@ const Register = () => {
     }
 
     try {
+      console.log('Submitting registration:', formData); // Debug log
+      
       const result = await register(formData)
+      
+      console.log('Registration result:', result); // Debug log
+      
       if (result.success) {
-        navigate('/dashboard')
+        // Add a small delay to ensure user data is set
+        setTimeout(() => {
+          navigate('/dashboard')
+        }, 100)
       } else {
         setError(result.error || 'Registration failed')
       }
     } catch (err) {
+      console.error('Registration submit error:', err)
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)

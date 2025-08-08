@@ -24,14 +24,27 @@ apiClient.interceptors.request.use(
 
 // Response interceptor for handling common errors
 apiClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    console.log('API Response:', response); // Debug log
+    return response.data;
+  },
   (error) => {
     // Handle different error scenarios
     if (error.response) {
       // Server responded with an error status
+      console.error('API Error Response:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config.url,
+        method: error.config.method,
+        headers: error.config.headers,
+        requestData: error.config.data
+      });
+      
       if (error.response.status === 401) {
         // Unauthorized - clear local storage and redirect to login
         localStorage.removeItem('token');
+        localStorage.removeItem('user'); // Also remove user data
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
@@ -44,11 +57,13 @@ apiClient.interceptors.response.use(
       });
     } else if (error.request) {
       // Request was made but no response received
+      console.error('API No Response:', error.request);
       return Promise.reject({
         message: 'Server did not respond. Please check your connection.'
       });
     } else {
       // Error setting up the request
+      console.error('API Request Error:', error.message);
       return Promise.reject({
         message: error.message || 'An error occurred while setting up the request'
       });

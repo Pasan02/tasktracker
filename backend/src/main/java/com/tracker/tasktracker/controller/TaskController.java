@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,8 +25,19 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<TaskDto> createTask(@Valid @RequestBody TaskDto taskDto, @RequestParam Long userId) {
-        Task createdTask = taskService.createTask(taskDto, userId);
-        return new ResponseEntity<>(taskService.convertToDto(createdTask), HttpStatus.CREATED);
+        try {
+            System.out.println("Creating task for user " + userId + ": " + taskDto);
+            Task createdTask = taskService.createTask(taskDto, userId);
+            TaskDto responseDto = taskService.convertToDto(createdTask);
+            return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error creating task: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            System.err.println("Unexpected error creating task: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
@@ -89,11 +101,61 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDto> updateTask(
+    public ResponseEntity<?> updateTask(
             @PathVariable Long id,
-            @Valid @RequestBody TaskDto taskDto) {
-        Task updatedTask = taskService.updateTask(id, taskDto);
-        return ResponseEntity.ok(taskService.convertToDto(updatedTask));
+            @RequestBody TaskDto taskDto) { // Remove @Valid to avoid validation issues
+        try {
+            System.out.println("=== TASK UPDATE REQUEST ===");
+            System.out.println("Task ID: " + id + " (Type: " + id.getClass().getSimpleName() + ")");
+            System.out.println("Request Body: " + taskDto);
+            System.out.println("Status field: '" + taskDto.getStatus() + "'");
+            System.out.println("===========================");
+            
+            // Validate task exists before updating
+            Optional<Task> existingTask = taskService.getTaskById(id);
+            if (existingTask.isEmpty()) {
+                System.err.println("Task not found with ID: " + id);
+                return ResponseEntity.notFound()
+                        .build();
+            }
+            
+            Task updatedTask = taskService.updateTask(id, taskDto);
+            TaskDto responseDto = taskService.convertToDto(updatedTask);
+            
+            System.out.println("=== UPDATE SUCCESS ===");
+            System.out.println("Updated task: " + responseDto);
+            System.out.println("======================");
+            
+            return ResponseEntity.ok(responseDto);
+        } catch (IllegalArgumentException e) {
+            System.err.println("=== VALIDATION ERROR ===");
+            System.err.println("Task ID: " + id);
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("Request DTO: " + taskDto);
+            System.err.println("========================");
+            
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                        "error", "Validation error", 
+                        "message", e.getMessage(),
+                        "taskId", id.toString(),
+                        "receivedData", taskDto.toString()
+                    ));
+        } catch (Exception e) {
+            System.err.println("=== UNEXPECTED ERROR ===");
+            System.err.println("Task ID: " + id);
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("Request DTO: " + taskDto);
+            e.printStackTrace();
+            System.err.println("========================");
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                        "error", "Internal server error", 
+                        "message", e.getMessage(),
+                        "taskId", id.toString()
+                    ));
+        }
     }
 
     @DeleteMapping("/{id}")

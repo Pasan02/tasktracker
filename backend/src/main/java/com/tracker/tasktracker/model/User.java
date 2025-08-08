@@ -8,41 +8,37 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
 public class User {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank
-    @Size(max = 50)
+    
+    @Column(nullable = false)
     private String firstName;
-
-    @NotBlank
-    @Size(max = 50)
+    
     private String lastName;
-
-    @NotBlank
-    @Size(max = 50)
-    @Email
-    @Column(unique = true)
+    
+    @Column(unique = true, nullable = false)
     private String email;
-
-    @NotBlank
-    @Size(max = 120)
+    
+    @Column(nullable = false)
     private String password;
-
+    
     private String avatar;
-
+    
+    // New fields for extended profile information
+    private String phone;
+    
+    private String location;
+    
+    @Column(nullable = false)
     private LocalDateTime createdAt;
-
-    public User() {
-    }
+    
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -90,6 +86,22 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+    
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public LocalDateTime getCreatedAt() {

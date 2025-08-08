@@ -1,17 +1,18 @@
 package com.tracker.tasktracker.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.tracker.tasktracker.dto.TaskDto;
 import com.tracker.tasktracker.model.Task;
 import com.tracker.tasktracker.model.User;
 import com.tracker.tasktracker.repository.TaskRepository;
 import com.tracker.tasktracker.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskService {
@@ -79,47 +80,97 @@ public class TaskService {
     }
     
     public Task updateTask(Long taskId, TaskDto taskDto) {
-        Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        System.out.println("=== SERVICE UPDATE START ===");
+        System.out.println("Updating task " + taskId + " with data: " + taskDto);
         
-        if (taskDto.getTitle() != null) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+        
+        System.out.println("Current task: " + task);
+        System.out.println("Current task status: " + task.getStatus());
+        
+        // Handle status update first since it's causing issues
+        if (taskDto.getStatus() != null && !taskDto.getStatus().trim().isEmpty()) {
+            String statusStr = taskDto.getStatus().trim().toUpperCase();
+            System.out.println("Processing status update: '" + taskDto.getStatus() + "' -> '" + statusStr + "'");
+            
+            try {
+                // Validate status value
+                if (!statusStr.equals("TODO") && !statusStr.equals("COMPLETED")) {
+                    throw new IllegalArgumentException("Invalid status '" + statusStr + "'. Valid values are: TODO, COMPLETED");
+                }
+                
+                Task.Status newStatus = Task.Status.valueOf(statusStr);
+                System.out.println("Updating status from " + task.getStatus() + " to " + newStatus);
+                
+                // Handle completion timestamp
+                if (newStatus == Task.Status.COMPLETED && task.getStatus() != Task.Status.COMPLETED) {
+                    task.setCompletedAt(LocalDateTime.now());
+                    System.out.println("Task marked as completed at: " + task.getCompletedAt());
+                } else if (newStatus == Task.Status.TODO && task.getStatus() == Task.Status.COMPLETED) {
+                    task.setCompletedAt(null);
+                    System.out.println("Task unmarked as completed");
+                }
+                task.setStatus(newStatus);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid status: " + taskDto.getStatus());
+                throw new IllegalArgumentException("Invalid status '" + taskDto.getStatus() + "'. Valid values are: TODO, COMPLETED");
+            }
+        }
+        
+        // Only update other fields if they are not null and not empty
+        if (taskDto.getTitle() != null && !taskDto.getTitle().trim().isEmpty()) {
+            System.out.println("Updating title: " + task.getTitle() + " -> " + taskDto.getTitle());
             task.setTitle(taskDto.getTitle());
         }
         
         if (taskDto.getDescription() != null) {
+            System.out.println("Updating description");
             task.setDescription(taskDto.getDescription());
         }
         
-        if (taskDto.getStatus() != null) {
-            Task.Status newStatus = Task.Status.valueOf(taskDto.getStatus().toUpperCase());
-            // If task is being marked as completed, set completedAt timestamp
-            if (newStatus == Task.Status.COMPLETED && task.getStatus() != Task.Status.COMPLETED) {
-                task.setCompletedAt(LocalDateTime.now());
-            } 
-            // If task is being unmarked as completed, clear completedAt timestamp
-            else if (newStatus != Task.Status.COMPLETED && task.getStatus() == Task.Status.COMPLETED) {
-                task.setCompletedAt(null);
+        if (taskDto.getPriority() != null && !taskDto.getPriority().trim().isEmpty()) {
+            try {
+                task.setPriority(Task.Priority.valueOf(taskDto.getPriority().toUpperCase()));
+                System.out.println("Updated priority to: " + taskDto.getPriority());
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid priority: " + taskDto.getPriority());
+                throw new IllegalArgumentException("Invalid priority '" + taskDto.getPriority() + "'");
             }
-            task.setStatus(newStatus);
         }
         
-        if (taskDto.getPriority() != null) {
-            task.setPriority(Task.Priority.valueOf(taskDto.getPriority().toUpperCase()));
-        }
-        
-        if (taskDto.getCategory() != null) {
-            task.setCategory(Task.Category.valueOf(taskDto.getCategory().toUpperCase()));
+        if (taskDto.getCategory() != null && !taskDto.getCategory().trim().isEmpty()) {
+            try {
+                task.setCategory(Task.Category.valueOf(taskDto.getCategory().toUpperCase()));
+                System.out.println("Updated category to: " + taskDto.getCategory());
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid category: " + taskDto.getCategory());
+                throw new IllegalArgumentException("Invalid category '" + taskDto.getCategory() + "'");
+            }
         }
         
         if (taskDto.getDueDate() != null) {
             task.setDueDate(taskDto.getDueDate());
+            System.out.println("Updated due date to: " + taskDto.getDueDate());
         }
         
         if (taskDto.getDueTime() != null) {
             task.setDueTime(taskDto.getDueTime());
+            System.out.println("Updated due time to: " + taskDto.getDueTime());
         }
         
-        return taskRepository.save(task);
+        try {
+            Task savedTask = taskRepository.save(task);
+            System.out.println("=== SERVICE UPDATE SUCCESS ===");
+            System.out.println("Task saved successfully with status: " + savedTask.getStatus());
+            System.out.println("Final task: " + savedTask);
+            System.out.println("==============================");
+            return savedTask;
+        } catch (Exception e) {
+            System.err.println("Error saving task to database: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to save task to database", e);
+        }
     }
     
     public void deleteTask(Long taskId) {
@@ -143,35 +194,22 @@ public class TaskService {
         return dto;
     }
     
-    public Task convertToEntity(TaskDto dto) {
+    private Task convertToEntity(TaskDto taskDto) {
         Task task = new Task();
+        task.setTitle(taskDto.getTitle());
+        task.setDescription(taskDto.getDescription());
         
-        if (dto.getId() != null) {
-            task.setId(dto.getId());
+        // Only allow TODO or COMPLETED status
+        String status = taskDto.getStatus() != null ? taskDto.getStatus().toUpperCase() : "TODO";
+        if (!status.equals("TODO") && !status.equals("COMPLETED")) {
+            throw new IllegalArgumentException("Status must be either TODO or COMPLETED, got: " + status);
         }
+        task.setStatus(Task.Status.valueOf(status));
         
-        task.setTitle(dto.getTitle());
-        task.setDescription(dto.getDescription());
-        
-        // Set default values if not provided
-        Task.Status status = dto.getStatus() != null 
-            ? Task.Status.valueOf(dto.getStatus().toUpperCase()) 
-            : Task.Status.TODO;
-        task.setStatus(status);
-        
-        Task.Priority priority = dto.getPriority() != null 
-            ? Task.Priority.valueOf(dto.getPriority().toUpperCase()) 
-            : Task.Priority.MEDIUM;
-        task.setPriority(priority);
-        
-        Task.Category category = dto.getCategory() != null 
-            ? Task.Category.valueOf(dto.getCategory().toUpperCase()) 
-            : Task.Category.WORK;
-        task.setCategory(category);
-        
-        task.setDueDate(dto.getDueDate());
-        task.setDueTime(dto.getDueTime());
-        
+        task.setPriority(Task.Priority.valueOf(taskDto.getPriority().toUpperCase()));
+        task.setCategory(Task.Category.valueOf(taskDto.getCategory().toUpperCase()));
+        task.setDueDate(taskDto.getDueDate());
+        task.setDueTime(taskDto.getDueTime());
         return task;
     }
 }

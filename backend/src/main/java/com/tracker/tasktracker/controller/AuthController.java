@@ -94,23 +94,28 @@ public class AuthController {
             }
             
             // Create new user
-            User user = new User();
-            user.setFirstName(registerRequest.getFirstName());
-            user.setLastName(registerRequest.getLastName());
-            user.setEmail(registerRequest.getEmail());
-            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            User user = userService.registerUser(
+                registerRequest.getFirstName(),
+                registerRequest.getLastName(),
+                registerRequest.getEmail(),
+                registerRequest.getPassword()
+            );
             
-            User savedUser = userService.saveUser(user);
-            
-            // Generate JWT token using Authentication object
+            // Generate JWT token
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                savedUser.getEmail(), null, Collections.emptyList());
+                user.getEmail(),
+                null,
+                Collections.emptyList()
+            );
             String jwt = jwtTokenProvider.generateToken(authentication);
             
-            // Return user info with token
+            // Return user info with token - make sure to include all user fields
             Map<String, Object> response = new HashMap<>();
             response.put("token", jwt);
-            response.put("user", userService.convertToDto(savedUser));
+            
+            // Use UserDto to ensure consistent user data structure
+            UserDto userDto = userService.convertToDto(user);
+            response.put("user", userDto);
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {

@@ -50,10 +50,19 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authService.register(userData)
-      setUser(response.user)
-      setIsAuthenticated(true)
-      return { success: true, user: response.user }
+      
+      console.log('Registration response in context:', response); // Debug log
+      
+      if (response.success) {
+        // Set user data immediately after successful registration
+        setUser(response.user)
+        setIsAuthenticated(true)
+        return { success: true, user: response.user }
+      } else {
+        return { success: false, error: response.error }
+      }
     } catch (error) {
+      console.error('Registration error in context:', error)
       return { success: false, error: error.message || 'Registration failed' }
     }
   }
@@ -66,11 +75,35 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (userData) => {
     try {
-      const updatedUser = await authService.updateProfile(user.id, userData)
-      setUser(updatedUser)
-      return { success: true, user: updatedUser }
+      const result = await authService.updateProfile(userData)
+      if (result.success) {
+        setUser(result.user)
+        return { 
+          success: true, 
+          user: result.user,
+          warning: result.warning 
+        }
+      } else {
+        return { 
+          success: false, 
+          error: result.error || 'Update failed' 
+        }
+      }
     } catch (error) {
-      return { success: false, error: error.message || 'Update failed' }
+      console.error('Profile update error in context:', error)
+      return { 
+        success: false, 
+        error: error.message || 'Update failed' 
+      }
+    }
+  }
+
+  const updatePassword = async (currentPassword, newPassword) => {
+    try {
+      const result = await authService.updatePassword(currentPassword, newPassword)
+      return { success: true, message: result.message }
+    } catch (error) {
+      return { success: false, error: error.message || 'Password update failed' }
     }
   }
 
@@ -81,7 +114,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    updateProfile
+    updateProfile,
+    updatePassword
   }
 
   return (

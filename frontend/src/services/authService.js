@@ -64,18 +64,23 @@ const authService = {
       
       const response = await apiClient.post(ENDPOINTS.AUTH.REGISTER, requestData);
       
-      // If successful, save token
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+      console.log('Registration response:', response); // Debug log
+      
+      // Fix: Handle the response structure correctly
+      // Your backend returns { token, user } directly, not nested in data
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
       }
       
       return {
         success: true,
-        user: response.data.user
+        user: response.user,
+        token: response.token
       };
     } catch (error) {
       console.error('Registration error:', error);
-      const errorMessage = error.response?.data?.message || 'Registration failed';
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
       return {
         success: false,
         error: errorMessage
@@ -114,26 +119,163 @@ const authService = {
 
   /**
    * Update user profile
-   * @param {string} userId - User ID
    * @param {Object} userData - Updated user data
    * @returns {Promise} - Updated user data
    */
-  updateProfile: async (userId, userData) => {
+  updateProfile: async (userData) => {
     try {
-      // For demo/development, update localStorage
-      const user = localStorage.getItem('user');
-      if (user) {
-        const updatedUser = {...JSON.parse(user), ...userData};
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        return updatedUser;
+      // Get current user
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || !user.id) {
+        throw new Error('User not found');
       }
-
-      // Real API call
-      const response = await apiClient.put(`${ENDPOINTS.AUTH.PROFILE}/${userId}`, userData);
-      return response.user;
+      
+      // Create the proper request object that matches UpdateProfileRequest on the backend
+      const updateRequest = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phone: userData.phone || '',
+        location: userData.location || '',
+        avatar: userData.avatar || null
+      };
+      
+      console.log('Sending profile update:', updateRequest);
+      
+      // Fix: Use the proper API endpoint from config
+      const response = await apiClient.put(`/users/${user.id}`, updateRequest);
+      
+      // Update localStorage with the new user data
+      const updatedUser = {
+        ...user,
+        firstName: updateRequest.firstName,
+        lastName: updateRequest.lastName,
+        phone: updateRequest.phone,
+        location: updateRequest.location,
+        avatar: updateRequest.avatar
+      };
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      return {
+        success: true,
+        user: updatedUser
+      };
     } catch (error) {
       console.error('Update profile error:', error);
-      throw error;
+      
+      // Add more detailed error logging
+      if (error.response) {
+        console.error('Error response:', error.response);
+      }
+      
+      // Implement the fallback
+      try {
+        // Local fallback - update user in localStorage only
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+          return { success: false, error: 'No user found in local storage' };
+        }
+        
+        const updatedUser = {
+          ...user,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phone: userData.phone || user.phone || '',
+          location: userData.location || user.location || '',
+          avatar: userData.avatar || user.avatar || null
+        };
+        
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        return {
+          success: true,
+          user: updatedUser,
+          warning: 'Profile updated locally only. Changes will not persist on the server.'
+        };
+      } catch (fallbackError) {
+        console.error('Even fallback failed:', fallbackError);
+        return {
+          success: false,
+          error: 'Failed to update profile both remotely and locally'
+        };
+      }
+    }
+  },
+
+  /**
+   * Update user password
+   * @param {string} currentPassword - Current password
+   * @param {string} newPassword - New password
+   * @returns {Promise} - Success status
+   */
+  updatePassword: async (currentPassword, newPassword) => {
+    try {
+      // Get current user
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || !user.id) {
+        throw new Error('User not found');
+      }
+      
+      // Make the API call with the correct method (POST instead of PUT)
+      const response = await apiClient.post(ENDPOINTS.USERS.PASSWORD(user.id), {
+        currentPassword,
+        newPassword
+      });
+      
+      return {
+        success: true,
+        message: response.message || 'Password updated successfully'
+      };
+    } catch (error) {
+      console.error('Update password error:', error);
+      // Improve error handling to extract the correct message
+      const errorMessage = 
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to update password';
+      
+      return {
+        success: false,
+        error: errorMessage
+      };
+    }
+  },
+
+  /**
+   * Update user profile with fallback
+   * @param {Object} userData - Updated user data
+   * @returns {Promise} - Updated user data
+   */
+  updateProfileWithFallback: async (userData) => {
+    try {
+      // Try to update via API first
+      const result = await authService.updateProfile(userData);
+      return result;
+    } catch (error) {
+      console.warn('API update failed, using local fallback', error);
+      
+      // Local fallback - update user in localStorage only
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        return { success: false, error: 'No user found in local storage' };
+      }
+      
+      const updatedUser = {
+        ...user,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phone: userData.phone || user.phone,
+        location: userData.location || user.location,
+        avatar: userData.avatar || user.avatar
+      };
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      return {
+        success: true,
+        user: updatedUser,
+        warning: 'Profile updated locally only. Changes will not persist on the server.'
+      };
     }
   }
 };

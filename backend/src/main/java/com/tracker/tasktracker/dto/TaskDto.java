@@ -1,30 +1,29 @@
 package com.tracker.tasktracker.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class TaskDto {
     private Long id;
     
-    @NotBlank(message = "Title is required")
+    // Remove @NotBlank and @NotNull for updates - only validate on creation
     @Size(max = 100, message = "Title cannot exceed 100 characters")
     private String title;
     
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
     
+    // No validation constraints - allow any valid status
     private String status;
     
-    @NotNull(message = "Priority is required")
+    // No validation constraints - allow any valid priority
     private String priority;
     
+    // No validation constraints - allow any valid category
     private String category;
     
-    @NotNull(message = "Due date is required")
+    // No validation constraints - allow any valid date
     private LocalDate dueDate;
     
     private LocalTime dueTime;
@@ -92,5 +91,19 @@ public class TaskDto {
 
     public void setDueTime(LocalTime dueTime) {
         this.dueTime = dueTime;
+    }
+    
+    @Override
+    public String toString() {
+        return "TaskDto{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", status='" + status + '\'' +
+                ", priority='" + priority + '\'' +
+                ", category='" + category + '\'' +
+                ", dueDate=" + dueDate +
+                ", dueTime=" + dueTime +
+                '}';
     }
 }

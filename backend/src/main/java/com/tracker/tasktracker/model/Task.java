@@ -44,7 +44,8 @@ public class Task {
     
     // Enum definitions
     public enum Status {
-        TODO, IN_PROGRESS, COMPLETED
+        TODO, COMPLETED
+        // Remove IN_PROGRESS since you're not using it
     }
     
     public enum Priority {

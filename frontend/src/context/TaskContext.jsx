@@ -16,21 +16,41 @@ export const TaskProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Update the fetchTasks function
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         setIsLoading(true)
         const data = await taskService.getAllTasks()
-        setTasks(data)
+        
+        // Convert backend task format to frontend format
+        const normalizedTasks = data.map(task => ({
+          ...task,
+          // Ensure status is always 'todo' or 'completed' (lowercase)
+          status: task.status ? task.status.toLowerCase() : 'todo',
+          priority: task.priority ? task.priority.toLowerCase() : 'medium',
+          category: task.category ? task.category.toLowerCase() : 'work'
+        }))
+        
+        console.log('Normalized tasks:', normalizedTasks);
+        
+        setTasks(normalizedTasks)
         setError(null)
       } catch (err) {
         console.error('Error fetching tasks:', err)
         setError('Failed to load tasks')
+        
         // Fallback to local storage if API fails
         const savedTasks = localStorage.getItem('tasks')
         if (savedTasks) {
           try {
-            setTasks(JSON.parse(savedTasks))
+            const parsedTasks = JSON.parse(savedTasks)
+            // Ensure consistency in saved tasks too
+            const normalizedSavedTasks = parsedTasks.map(task => ({
+              ...task,
+              status: task.status === 'completed' ? 'completed' : 'todo'
+            }))
+            setTasks(normalizedSavedTasks)
           } catch (error) {
             console.error('Error parsing saved tasks:', error)
           }
