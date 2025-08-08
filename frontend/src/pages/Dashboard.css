@@ -451,6 +451,117 @@
   opacity: 1;
 }
 
+/* Empty States - Updated Design */
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+/* Improved Button Designs */
+.add-task-link,
+.add-habit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-teal);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.add-task-link:hover,
+.add-habit-link:hover {
+  background: var(--primary-teal-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 209, 161, 0.3);
+}
+
+.add-task-link:active,
+.add-habit-link:active {
+  transform: translateY(0);
+}
+
+.empty-events {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-events p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.empty-events button {
+  background: var(--bg-secondary);
+  color: var(--primary-teal);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.empty-events button:hover {
+  background: var(--primary-teal);
+  color: white;
+  border-color: var(--primary-teal);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(29, 209, 161, 0.2);
+}
+
+.view-all-calendar {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 8px;
+}
+
+.view-all-calendar button {
+  background: var(--bg-secondary);
+  color: var(--primary-teal);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.view-all-calendar button:hover {
+  background: var(--primary-teal);
+  color: white;
+  border-color: var(--primary-teal);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(29, 209, 161, 0.2);
+}
+
+/* Task Time Styling */
+.task-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .dashboard-grid {

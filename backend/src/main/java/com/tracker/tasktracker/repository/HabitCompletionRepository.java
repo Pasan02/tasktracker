@@ -11,13 +11,19 @@ import java.util.Optional;
 
 @Repository
 public interface HabitCompletionRepository extends JpaRepository<HabitCompletion, Long> {
-    List<HabitCompletion> findByHabit(Habit habit);
     
-    List<HabitCompletion> findByHabitAndCompletionDateBetween(Habit habit, LocalDate start, LocalDate end);
-    
-    Optional<HabitCompletion> findByHabitAndCompletionDate(Habit habit, LocalDate completionDate);
-    
+    // Check if habit is completed on a specific date
     boolean existsByHabitAndCompletionDate(Habit habit, LocalDate completionDate);
     
-    List<HabitCompletion> findByHabitInAndCompletionDateBetween(List<Habit> habits, LocalDate start, LocalDate end);
+    // Find completion by habit and date
+    Optional<HabitCompletion> findByHabitAndCompletionDate(Habit habit, LocalDate completionDate);
+    
+    // Find all completions for a habit
+    List<HabitCompletion> findByHabit(Habit habit);
+    
+    // Find completions between dates
+    List<HabitCompletion> findByHabitAndCompletionDateBetween(Habit habit, LocalDate startDate, LocalDate endDate);
+    
+    // Find completions for multiple habits between dates
+    List<HabitCompletion> findByHabitInAndCompletionDateBetween(List<Habit> habits, LocalDate startDate, LocalDate endDate);
 }

@@ -1,121 +1,74 @@
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Star, Circle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTask } from '../context/TaskContext'
+import { useHabit } from '../context/HabitContext'
+import { format, isSameDay, parseISO } from 'date-fns'
 import DateModal from '../components/calendar/DateModal'
 import './Calendar.css'
 
 const Calendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 4, 1)) // May 2025
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   
+  const { tasks } = useTask()
+  const { habits, isHabitCompletedOnDate } = useHabit()
+  
   const monthNames = [
-    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
   ]
   
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  
-  // Mock events data
-  const events = {
-    1: [
-      { type: 'work', text: 'First Day of Asian America and Pacific Islander Heritage Month', time: '10a', color: 'teal' },
-      { type: 'life', text: '1m', color: 'orange' }
-    ],
-    2: [
-      { type: 'work', text: 'Orthodox Easter', color: 'orange' },
-      { type: 'life', text: '1m', color: 'orange' }
-    ],
-    3: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    4: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    5: [
-      { type: 'work', text: 'Cinco de Mayo', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    6: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    7: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    9: [
-      { type: 'life', text: 'Mother\'s Day ❤️', color: 'orange' }
-    ],
-    10: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    11: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    12: [
-      { type: 'work', text: 'Eid al-Fitr', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    13: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    14: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    16: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    17: [
-      { type: 'work', text: 'Tax day', time: '10a', color: 'pink' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    18: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    19: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    20: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    21: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    24: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    25: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    26: [
-      { type: 'work', text: 'Write something here', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    27: [
-      { type: 'special', text: 'Take day off to recharge', time: '4:3', color: 'blue' },
-      { type: 'special', text: 'Going to the beach', color: 'blue' },
-      { type: 'life', text: 'Start vacation', color: 'orange' }
-    ],
-    28: [
-      { type: 'work', text: 'Beach day', time: '10a', color: 'orange' },
-      { type: 'work', text: 'Write something here', time: '1m', color: 'orange' }
-    ],
-    29: [
-      { type: 'work', text: 'Beach day', time: '10a', color: 'orange' }
-    ]
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  // Generate calendar tasks with proper sorting
+  const getTasksForDate = (date) => {
+    return tasks.filter(task => {
+      if (!task.dueDate) return false
+      try {
+        const taskDate = parseISO(task.dueDate)
+        return isSameDay(taskDate, date)
+      } catch (error) {
+        return false
+      }
+    }).sort((a, b) => {
+      // Sort by priority (high first) and then by time
+      const priorityOrder = { high: 3, medium: 2, low: 1 }
+      const aPriority = priorityOrder[a.priority] || 1
+      const bPriority = priorityOrder[b.priority] || 1
+      
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority
+      }
+      
+      if (a.dueTime && b.dueTime) {
+        return a.dueTime.localeCompare(b.dueTime)
+      }
+      
+      return 0
+    })
+  }
+
+  // Helper functions
+  const formatTime = (timeString) => {
+    if (!timeString) return null
+    try {
+      const [hours, minutes] = timeString.split(':')
+      const hour12 = parseInt(hours) % 12 || 12
+      const ampm = parseInt(hours) < 12 ? 'AM' : 'PM'
+      return `${hour12}:${minutes} ${ampm}`
+    } catch (error) {
+      return timeString
+    }
+  }
+
+  const getPriorityColor = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case 'high': return '#EF4444'
+      case 'medium': return '#F59E0B'
+      case 'low': return '#10B981'
+      default: return '#94A3B8'
+    }
   }
 
   const getDaysInMonth = (date) => {
@@ -143,6 +96,12 @@ const Calendar = () => {
     setSelectedDate(null)
   }
 
+  const isToday = (day) => {
+    const today = new Date()
+    const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+    return isSameDay(today, checkDate)
+  }
+
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate)
     const firstDay = getFirstDayOfMonth(currentDate)
@@ -155,31 +114,35 @@ const Calendar = () => {
 
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const dayEvents = events[day] || []
-      const isToday = day === 15 // Highlight day 15 as "today" for demo
+      const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+      const dayTasks = getTasksForDate(dayDate)
+      const isTodayDate = isToday(day)
       
       days.push(
         <div 
           key={day} 
-          className={`calendar-day ${isToday ? 'today' : ''}`}
+          className={`calendar-day ${isTodayDate ? 'today' : ''} ${dayTasks.length > 0 ? 'has-tasks' : ''}`}
           onClick={() => handleDateClick(day)}
         >
-          <div className="day-header">
-            <span className="day-number">{day}</span>
-            {dayEvents.length > 0 && (
-              <div className="day-indicators">
-                <Star size={12} className="star-icon" />
-              </div>
-            )}
-          </div>
-          <div className="day-events">
-            {dayEvents.map((event, index) => (
-              <div key={index} className={`event event-${event.color}`}>
-                {event.time && <span className="event-time">{event.time}</span>}
-                <span className="event-text">{event.text}</span>
-              </div>
-            ))}
-          </div>
+          <div className="day-number">{day}</div>
+          
+          {dayTasks.length > 0 && (
+            <div className="day-tasks">
+              {dayTasks.slice(0, 4).map((task, index) => (
+                <div key={index} className="task-text">
+                  <span className="task-title">{task.title}</span>
+                  {task.dueTime && (
+                    <span className="task-time">{formatTime(task.dueTime)}</span>
+                  )}
+                </div>
+              ))}
+              {dayTasks.length > 4 && (
+                <div className="more-tasks">
+                  +{dayTasks.length - 4} more
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )
     }
@@ -189,39 +152,41 @@ const Calendar = () => {
 
   return (
     <div className="calendar-page">
+      {/* Simplified Header - No subtitle, no stats */}
       <div className="calendar-header">
-        <div className="month-navigation">
-          <button className="nav-btn" onClick={() => navigateMonth(-1)}>
+        <h1 className="page-title">Calendar</h1>
+        <div className="calendar-navigation">
+          <button className="nav-button" onClick={() => navigateMonth(-1)}>
             <ChevronLeft size={20} />
           </button>
-          <h1 className="month-title">
+          <h2 className="current-month">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h1>
-          <button className="nav-btn" onClick={() => navigateMonth(1)}>
+          </h2>
+          <button className="nav-button" onClick={() => navigateMonth(1)}>
             <ChevronRight size={20} />
+          </button>
+          <button className="today-button" onClick={() => setCurrentDate(new Date())}>
+            Today
           </button>
         </div>
       </div>
 
+      {/* Calendar Grid */}
       <div className="calendar-container">
         <div className="calendar-grid">
-          {/* Day headers */}
-          <div className="calendar-header-row">
-            {dayNames.map(day => (
-              <div key={day} className="day-header-cell">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar days */}
-          <div className="calendar-body">
-            {renderCalendarDays()}
-          </div>
+          {/* Day Headers */}
+          {dayNames.map(day => (
+            <div key={day} className="day-header">
+              {day}
+            </div>
+          ))}
+          
+          {/* Calendar Days */}
+          {renderCalendarDays()}
         </div>
       </div>
 
-      {/* Date Modal */}
+      {/* Date Modal - Keep unchanged */}
       <DateModal 
         isOpen={isModalOpen}
         onClose={closeModal}

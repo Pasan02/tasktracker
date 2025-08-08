@@ -3,8 +3,8 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 1000px;
+  margin: 0; /* Remove auto centering */
 }
 
 .profile-card {
@@ -17,6 +17,7 @@
 
 .profile-card-header {
   margin-bottom: 32px;
+  text-align: left; /* Ensure header text is left aligned */
 }
 
 .profile-card-header h2 {
@@ -24,12 +25,14 @@
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 8px 0;
+  text-align: left; /* Left align heading */
 }
 
 .profile-card-header p {
   color: var(--text-secondary);
   font-size: 14px;
   margin: 0;
+  text-align: left; /* Left align description */
 }
 
 /* Profile Photo Section */
@@ -86,12 +89,14 @@
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 4px 0;
+  text-align: left; /* Left align photo info heading */
 }
 
 .photo-info p {
   color: var(--text-secondary);
   font-size: 14px;
   margin: 0 0 16px 0;
+  text-align: left; /* Left align photo info text */
 }
 
 .upload-btn {
@@ -117,24 +122,29 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  align-items: flex-start; /* Left align form elements */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%; /* Full width for form groups */
+  align-items: flex-start; /* Left align form group contents */
 }
 
 .form-group label {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
+  text-align: left; /* Left align labels */
 }
 
 .input-with-icon {
   position: relative;
   display: flex;
   align-items: center;
+  width: 80%; /* Full width for input containers */
 }
 
 .input-with-icon svg {
@@ -152,6 +162,7 @@
   font-size: 14px;
   background: white;
   transition: all 0.2s ease;
+  text-align: left; /* Left align input text */
 }
 
 .input-with-icon input:focus {
@@ -162,12 +173,12 @@
 
 .password-toggle {
   position: absolute;
-  right: 16px;
+  right: 50px;
   background: none;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
+  padding: 0px;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
@@ -183,6 +194,7 @@
   align-items: center;
   gap: 12px;
   margin-top: 8px;
+  width: 100%; /* Full width for password strength */
 }
 
 .password-strength-bar {
@@ -203,12 +215,14 @@
   font-size: 12px;
   font-weight: 500;
   min-width: 60px;
+  text-align: left; /* Left align strength text */
 }
 
 .password-mismatch {
   color: var(--red);
   font-size: 12px;
   margin-top: 4px;
+  text-align: left; /* Left align error text */
 }
 
 /* Save Button */
@@ -222,7 +236,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  align-self: flex-start;
+  align-self: flex-start; /* Left align save button */
   margin-top: 8px;
 }
 
@@ -246,6 +260,7 @@
   display: flex;
   align-items: center;
   animation: fadeInDown 0.4s ease, fadeOut 0.4s ease 2.6s;
+  text-align: left; /* Left align message text */
 }
 
 .message-banner.success {
@@ -323,14 +338,14 @@
   
   .profile-photo-section {
     flex-direction: column;
-    text-align: center;
+    text-align: left; /* Keep left alignment on mobile */
     gap: 16px;
   }
   
   .photo-info {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start; /* Left align on mobile */
   }
   
   .form-group {
@@ -368,6 +383,6 @@
   
   .save-btn {
     width: 100%;
-    align-self: stretch;
+    align-self: stretch; /* Full width on very small screens */
   }
 }

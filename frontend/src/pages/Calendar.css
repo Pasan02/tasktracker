@@ -1,4 +1,4 @@
-/* Calendar Page Styles */
+/* Calendar Page Styles - Clean design like reference image */
 
 .calendar-page {
   max-width: 1200px;
@@ -6,18 +6,29 @@
   padding: 0;
 }
 
+/* Simplified Header */
 .calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 32px;
 }
 
-.month-navigation {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
 }
 
-.nav-btn {
+/* Navigation */
+.calendar-navigation {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-button {
   background: var(--bg-primary);
   border: 1px solid var(--border-light);
   border-radius: 8px;
@@ -31,182 +42,211 @@
   transition: all 0.2s ease;
 }
 
-.nav-btn:hover {
+.nav-button:hover {
   background: var(--bg-secondary);
   color: var(--text-primary);
   border-color: var(--primary-teal);
 }
 
-.month-title {
-  font-size: 32px;
-  font-weight: 700;
+.current-month {
+  font-size: 24px;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
-  min-width: 300px;
+  min-width: 200px;
   text-align: center;
 }
 
+.today-button {
+  background: var(--primary-teal);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.today-button:hover {
+  background: var(--primary-teal-dark);
+  transform: translateY(-1px);
+}
+
+/* Calendar Container */
 .calendar-container {
   background: var(--bg-primary);
   border: 1px solid var(--border-light);
   border-radius: 16px;
   padding: 24px;
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .calendar-grid {
-  width: 100%;
-}
-
-.calendar-header-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  margin-bottom: 16px;
-}
-
-.day-header-cell {
-  padding: 12px 8px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  border-radius: 8px;
-}
-
-.calendar-body {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+  gap: 2px;
   background: var(--border-light);
   border-radius: 8px;
   overflow: hidden;
 }
 
+/* Day Headers */
+.day-header {
+  background: var(--bg-secondary);
+  padding: 16px 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-light);
+}
+
+/* Calendar Days - Clean like reference */
 .calendar-day {
   background: var(--bg-primary);
   min-height: 120px;
-  padding: 8px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s ease;
   position: relative;
+}
+
+.calendar-day:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .calendar-day.empty {
   background: var(--bg-secondary);
   opacity: 0.3;
+  cursor: default;
+}
+
+.calendar-day.empty:hover {
+  background: var(--bg-secondary);
+  transform: none;
+  box-shadow: none;
 }
 
 .calendar-day.today {
-  background: #E6FFFA;
-  border: 2px solid var(--primary-teal);
+  background: var(--primary-teal);
+  color: white;
 }
 
-.day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+.calendar-day.today:hover {
+  background: var(--primary-teal-dark);
+}
+
+.calendar-day.has-tasks {
+  border-left: 3px solid var(--primary-teal);
+}
+
+.calendar-day.today.has-tasks {
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
 }
 
 .day-number {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
-.day-indicators {
-  display: flex;
-  gap: 2px;
+.calendar-day.today .day-number {
+  color: white;
+  font-weight: 700;
 }
 
-.star-icon {
-  color: var(--primary-teal);
-}
-
-.day-events {
+/* Task Display - Time + Title on same line */
+.day-tasks {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
 }
 
-.event {
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  line-height: 1.2;
+.task-text {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
-  margin-bottom: 1px;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
 }
 
-.event-orange {
-  background: #FED7AA;
-  color: #EA580C;
-}
-
-.event-teal {
-  background: #A7F3D0;
-  color: #059669;
-}
-
-.event-pink {
-  background: #FECACA;
-  color: #DC2626;
-}
-
-.event-blue {
-  background: #BFDBFE;
-  color: #2563EB;
-}
-
-.event-time {
+.task-time {
+  font-size: 10px;
   font-weight: 600;
-  font-size: 9px;
-  opacity: 0.8;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  min-width: 35px;
 }
 
-.event-text {
-  font-size: 9px;
-  line-height: 1.1;
+.calendar-day.today .task-time {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.task-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
+  white-space: nowrap;
 }
 
-/* Special styling for specific events */
-.calendar-day:nth-child(8) { /* First day */
-  background: #E6FFFA;
+.calendar-day.today .task-title {
+  color: white;
 }
 
-.calendar-day:nth-child(16) { /* May 9 - Mother's Day */
-  .event {
-    background: #FED7AA;
-    color: #EA580C;
-  }
+.more-tasks {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 2px;
+  text-align: center;
 }
 
-.calendar-day:nth-child(24) { /* May 17 - Tax day */
-  .event-pink {
-    background: #FECACA;
-    color: #DC2626;
-  }
-}
-
-.calendar-day:nth-child(34) { /* May 27 - Special day */
-  background: #DBEAFE;
+.calendar-day.today .more-tasks {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+  .calendar-header {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
   .calendar-page {
     padding: 0 16px;
+  }
+  
+  .calendar-header {
+    margin-bottom: 24px;
+  }
+  
+  .page-title {
+    font-size: 28px;
+  }
+  
+  .calendar-navigation {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .current-month {
+    font-size: 20px;
+    min-width: 180px;
   }
   
   .calendar-container {
@@ -215,118 +255,67 @@
   
   .calendar-day {
     min-height: 100px;
-    padding: 6px;
-  }
-  
-  .month-title {
-    font-size: 28px;
-    min-width: 250px;
-  }
-}
-
-@media (max-width: 768px) {
-  .calendar-day {
-    min-height: 80px;
-    padding: 4px;
+    padding: 8px;
   }
   
   .day-number {
-    font-size: 12px;
+    font-size: 14px;
+    margin-bottom: 6px;
   }
   
-  .event {
-    padding: 1px 4px;
-    font-size: 8px;
+  .task-time {
+    font-size: 9px;
+    min-width: 30px;
   }
   
-  .event-time {
-    font-size: 7px;
-  }
-  
-  .event-text {
-    font-size: 8px;
-  }
-  
-  .month-title {
-    font-size: 24px;
-    min-width: 200px;
-  }
-  
-  .day-header-cell {
-    padding: 8px 4px;
-    font-size: 12px;
+  .task-title {
+    font-size: 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .month-navigation {
-    gap: 16px;
-  }
-  
-  .nav-btn {
-    width: 32px;
-    height: 32px;
+  .day-header {
+    padding: 12px 4px;
+    font-size: 12px;
   }
   
   .calendar-day {
-    min-height: 60px;
-    padding: 2px;
+    min-height: 80px;
+    padding: 6px;
   }
   
-  .event {
-    padding: 1px 2px;
-    font-size: 7px;
+  .day-number {
+    font-size: 12px;
+    margin-bottom: 4px;
   }
   
-  .event-text {
-    font-size: 7px;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
+  .task-time {
+    font-size: 8px;
+    min-width: 25px;
   }
   
-  .day-header-cell {
-    padding: 6px 2px;
-    font-size: 10px;
+  .task-title {
+    font-size: 9px;
   }
   
-  .month-title {
-    font-size: 20px;
-    min-width: 150px;
+  .more-tasks {
+    font-size: 8px;
   }
 }
 
-/* Hover effects */
-.calendar-day:hover {
-  background: var(--bg-secondary);
-  cursor: pointer;
+/* Focus states */
+.calendar-day:focus-visible {
+  outline: 2px solid var(--primary-teal);
+  outline-offset: 2px;
 }
 
-.calendar-day.today:hover {
-  background: #B2F5EA;
+.nav-button:focus-visible,
+.today-button:focus-visible {
+  outline: 2px solid var(--primary-teal);
+  outline-offset: 2px;
 }
 
-.calendar-day.empty:hover {
-  background: var(--bg-secondary);
-  cursor: default;
-}
-
-/* Print styles */
-@media print {
-  .calendar-page {
-    max-width: none;
-    padding: 0;
-  }
-  
-  .nav-btn {
-    display: none;
-  }
-  
-  .calendar-container {
-    border: 1px solid #000;
-    box-shadow: none;
-  }
-  
-  .calendar-day {
-    border: 1px solid #ccc;
-  }
+/* Smooth animations */
+.calendar-day {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }

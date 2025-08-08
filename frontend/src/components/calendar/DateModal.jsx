@@ -1,50 +1,66 @@
 import { X, Calendar, CheckCircle, Circle, Clock, Star } from 'lucide-react'
 import { useTask } from '../../context/TaskContext'
 import { useHabit } from '../../context/HabitContext'
-import { format, isSameDay } from 'date-fns'
+import { format, isSameDay, parseISO } from 'date-fns'
 import './DateModal.css'
 
 const DateModal = ({ isOpen, onClose, selectedDate }) => {
-  const { tasks, toggleTaskStatus } = useTask()
-  const { habits, habitCompletions, toggleHabitCompletion } = useHabit()
+  const { tasks, updateTask } = useTask()
+  const { habits, markHabitComplete, isHabitCompletedOnDate } = useHabit()
 
   if (!isOpen || !selectedDate) return null
 
   // Filter tasks for the selected date
   const dateTasks = tasks.filter(task => {
     if (!task.dueDate) return false
-    const taskDate = new Date(task.dueDate)
-    return isSameDay(taskDate, selectedDate)
+    try {
+      const taskDate = parseISO(task.dueDate)
+      return isSameDay(taskDate, selectedDate)
+    } catch (error) {
+      return false
+    }
   })
 
   // Filter habits for the selected date
   const dateHabits = habits.filter(habit => {
     if (!habit.isActive) return false
     const dayOfWeek = selectedDate.getDay()
+    
+    // Check if habit is scheduled for this day
+    if (!habit.targetDays || habit.targetDays.length === 0) {
+      return true // Daily habit
+    }
+    
     return habit.targetDays.includes(dayOfWeek)
   })
 
   // Check if habit is completed for the selected date
   const isHabitCompleted = (habitId) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd')
-    return habitCompletions.some(completion => 
-      completion.habitId === habitId && 
-      completion.date === dateStr && 
-      completion.completed
-    )
+    return isHabitCompletedOnDate(habitId, dateStr)
   }
 
-  const handleTaskToggle = (taskId) => {
-    toggleTaskStatus(taskId)
+  const handleTaskToggle = async (taskId) => {
+    try {
+      const task = tasks.find(t => t.id === taskId)
+      const newStatus = task.status === 'completed' ? 'todo' : 'completed'
+      await updateTask(taskId, { status: newStatus })
+    } catch (error) {
+      console.error('Error updating task:', error)
+    }
   }
 
-  const handleHabitToggle = (habitId) => {
-    const dateStr = format(selectedDate, 'yyyy-MM-dd')
-    toggleHabitCompletion(habitId, dateStr)
+  const handleHabitToggle = async (habitId) => {
+    try {
+      const dateStr = format(selectedDate, 'yyyy-MM-dd')
+      await markHabitComplete(habitId, dateStr)
+    } catch (error) {
+      console.error('Error toggling habit:', error)
+    }
   }
 
   const getPriorityColor = (priority) => {
-    switch (priority) {
+    switch (priority?.toLowerCase()) {
       case 'high': return '#EF4444'
       case 'medium': return '#F59E0B'
       case 'low': return '#10B981'
@@ -54,10 +70,26 @@ const DateModal = ({ isOpen, onClose, selectedDate }) => {
 
   const formatTime = (timeString) => {
     if (!timeString) return ''
-    const [hours, minutes] = timeString.split(':')
-    const hour12 = hours % 12 || 12
-    const ampm = hours < 12 ? 'AM' : 'PM'
-    return `${hour12}:${minutes} ${ampm}`
+    try {
+      const [hours, minutes] = timeString.split(':')
+      const hour12 = parseInt(hours) % 12 || 12
+      const ampm = parseInt(hours) < 12 ? 'AM' : 'PM'
+      return `${hour12}:${minutes} ${ampm}`
+    } catch (error) {
+      return timeString
+    }
+  }
+
+  const getCategoryColor = (category) => {
+    const colorMap = {
+      health: '#10B981',
+      learning: '#3B82F6', 
+      work: '#8B5CF6',
+      personal: '#F59E0B',
+      social: '#EF4444',
+      other: '#6B7280'
+    }
+    return colorMap[category?.toLowerCase()] || colorMap.other
   }
 
   return (
@@ -121,7 +153,9 @@ const DateModal = ({ isOpen, onClose, selectedDate }) => {
                             className="priority-indicator"
                             style={{ backgroundColor: getPriorityColor(task.priority) }}
                           ></div>
-                          <span className="task-category">{task.category}</span>
+                          <span className="task-category" style={{ color: getCategoryColor(task.category) }}>
+                            {task.category}
+                          </span>
                         </div>
                       </div>
                       {task.description && (
@@ -166,7 +200,15 @@ const DateModal = ({ isOpen, onClose, selectedDate }) => {
                       <div className="habit-content">
                         <div className="habit-header">
                           <h4 className="habit-title">{habit.title}</h4>
-                          <span className="habit-frequency">{habit.frequency}</span>
+                          <div className="habit-meta">
+                            <span className="habit-frequency">{habit.frequency}</span>
+                            <span 
+                              className="habit-category"
+                              style={{ color: getCategoryColor(habit.category) }}
+                            >
+                              {habit.category}
+                            </span>
+                          </div>
                         </div>
                         {habit.description && (
                           <p className="habit-description">{habit.description}</p>

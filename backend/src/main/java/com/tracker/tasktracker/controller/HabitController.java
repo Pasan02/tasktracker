@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,5 +143,94 @@ public class HabitController {
         stats.put("longestStreak", longestStreak);
         
         return ResponseEntity.ok(stats);
+    }
+
+    // Toggle habit completion (mark/unmark)
+    @PostMapping("/{habitId}/toggle-complete")
+    public ResponseEntity<?> toggleHabitCompletion(
+            @PathVariable Long habitId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        try {
+            System.out.println("=== HABIT COMPLETION TOGGLE ===");
+            System.out.println("Habit ID: " + habitId);
+            System.out.println("Date parameter: " + date);
+            
+            LocalDate completionDate = date != null ? date : LocalDate.now();
+            System.out.println("Using completion date: " + completionDate);
+            
+            // Validate habit exists
+            Optional<Habit> habitOpt = habitService.getHabitById(habitId);
+            if (habitOpt.isEmpty()) {
+                System.err.println("Habit not found with ID: " + habitId);
+                return ResponseEntity.notFound().build();
+            }
+            
+            // Check if already completed for this date
+            boolean isCompleted = habitCompletionService.isHabitCompletedOnDate(habitId, completionDate);
+            System.out.println("Is habit completed for this date: " + isCompleted);
+            
+            if (isCompleted) {
+                // Remove completion
+                System.out.println("Removing habit completion");
+                habitCompletionService.unmarkHabitCompletion(habitId, completionDate);
+                
+                return ResponseEntity.ok(Map.of(
+                    "action", "removed",
+                    "date", completionDate.toString(),
+                    "message", "Habit completion removed"
+                ));
+            } else {
+                // Add completion
+                System.out.println("Adding habit completion");
+                HabitCompletion completion = habitCompletionService.markHabitAsCompleted(habitId, completionDate);
+                
+                // Convert completion to a simple map to avoid serialization issues
+                Map<String, Object> completionData = new HashMap<>();
+                completionData.put("id", completion.getId());
+                completionData.put("habitId", completion.getHabit().getId());
+                completionData.put("completionDate", completion.getCompletionDate().toString());
+                
+                return ResponseEntity.ok(Map.of(
+                    "action", "added",
+                    "completion", completionData,
+                    "message", "Habit marked as complete"
+                ));
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Validation error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Validation error", "message", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("Unexpected error in habit completion toggle: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Internal server error", "message", e.getMessage()));
+        }
+    }
+
+    // Get all completions for a user's habits
+    @GetMapping("/user/{userId}/completions")
+    public ResponseEntity<List<Map<String, Object>>> getUserHabitCompletions(@PathVariable Long userId) {
+        try {
+            List<Habit> userHabits = habitService.getHabitsByUser(userId);
+            List<Map<String, Object>> allCompletions = new ArrayList<>();
+            
+            for (Habit habit : userHabits) {
+                List<HabitCompletion> completions = habitCompletionService.getHabitCompletions(habit.getId());
+                for (HabitCompletion completion : completions) {
+                    Map<String, Object> completionData = new HashMap<>();
+                    completionData.put("id", completion.getId());
+                    completionData.put("habitId", habit.getId());
+                    completionData.put("date", completion.getCompletionDate().toString());
+                    completionData.put("completed", true);
+                    allCompletions.add(completionData);
+                }
+            }
+            
+            return ResponseEntity.ok(allCompletions);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
