@@ -295,8 +295,8 @@
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
-  background: var(--color-background-secondary);
-  color: var(--color-text-secondary);
+  background: var(--bg-secondary);            /* was var(--color-background-secondary) */
+  color: var(--text-secondary);               /* was var(--color-text-secondary) */
   text-transform: capitalize;
   margin-left: 8px;
 }
@@ -305,7 +305,7 @@
 .empty-state {
   text-align: center;
   padding: 24px;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);               /* was var(--color-text-secondary) */
 }
 
 .empty-state p {
@@ -316,7 +316,7 @@
 .empty-state-main {
   text-align: center;
   padding: 48px 24px;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);               /* was var(--color-text-secondary) */
 }
 
 .empty-icon {
@@ -328,7 +328,7 @@
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--text-primary);                 /* was var(--color-text-primary) */
 }
 
 .empty-state-main p {
@@ -341,8 +341,8 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--primary-teal);            /* was var(--color-primary) */
+  color: var(--white);                        /* was var(--color-white) */
   border: none;
   border-radius: 12px;
   font-size: 14px;
@@ -352,9 +352,9 @@
 }
 
 .add-task-button-empty:hover {
-  background: #2563eb;
+  background: var(--primary-teal-dark);       /* was #2563eb */
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(29, 209, 161, 0.3);
 }
 
 .add-task-button-empty:active {

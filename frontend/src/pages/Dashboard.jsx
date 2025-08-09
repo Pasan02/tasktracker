@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useTask } from '../context/TaskContext'
 import { useHabit } from '../context/HabitContext'
-import { Plus, Check, Clock, Calendar as CalendarIcon, ArrowRight, CheckCircle2, Circle } from 'lucide-react'
+import { Plus, Check, Clock, Calendar as CalendarIcon, ArrowRight, CheckCircle2, Circle, MoreHorizontal } from 'lucide-react'
 import { format, parseISO, isSameDay } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import AddTaskModal from '../components/tasks/AddTaskModal'
@@ -204,49 +204,59 @@ const Dashboard = () => {
               <h2>Today's Tasks ({completedTasksToday}/{todaysTasks.length})</h2>
             </div>
             
-            <div className="tasks-card">
-              <div className="tasks-list">
-                {todaysTasks.length === 0 ? (
-                  <div className="empty-state">
-                    <p>No tasks for today</p>
-                    <button onClick={openAddTaskModal} className="add-task-link">
-                      Add your first task
+            {/* Use same card structure as Tasks.jsx */}
+            <div className="task-day-card">
+              {todaysTasks.length === 0 ? (
+                <div className="empty-state">
+                  <p>No tasks for today</p>
+                  <button onClick={openAddTaskModal} className="add-task-link">
+                    Add your first task
+                  </button>
+                </div>
+              ) : (
+                todaysTasks.map(task => (
+                  <div 
+                    key={task.id} 
+                    className="task-item"
+                  >
+                    <button 
+                      className={`task-checkbox ${task.status === 'completed' ? 'completed' : ''}`}
+                      onClick={() => handleTaskComplete(task.id, task.status)}
+                    >
+                      {task.status === 'completed' ? <CheckCircle2 size={20} /> : <Circle size={20} />}
                     </button>
-                  </div>
-                ) : (
-                  todaysTasks.map(task => (
-                    <div key={task.id} className="task-item">
-                      <button 
-                        className={`task-checkbox ${task.status === 'completed' ? 'completed' : ''}`}
-                        onClick={() => handleTaskComplete(task.id, task.status)}
-                      >
-                        {task.status === 'completed' ? (
-                          <Check size={14} />
-                        ) : (
-                          <div></div>
-                        )}
-                      </button>
-                      <div className="task-content">
-                        <p className={`task-title ${task.status === 'completed' ? 'completed' : ''}`}>
-                          {task.title}
-                        </p>
-                        {task.dueTime && (
-                          <span className="task-time">{formatTime(task.dueTime)}</span>
-                        )}
-                      </div>
-                      <div 
-                        className={`task-priority ${task.priority}`}
-                        style={{ 
-                          backgroundColor: getPriorityColor(task.priority) + '20',
-                          color: getPriorityColor(task.priority)
-                        }}
-                      >
-                        {task.priority}
+                    
+                    <div className="task-content">
+                      <h3 className={`task-title ${task.status === 'completed' ? 'completed' : ''}`}>
+                        {task.title}
+                      </h3>
+                      {task.description && (
+                        <p className="task-description">{task.description}</p>
+                      )}
+                      <div className="task-meta">
+                        <span className={`priority-badge ${task.priority}`}>
+                          {task.priority}
+                        </span>
+                        <span className="category-badge">
+                          {task.category || 'general'}
+                        </span>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                    
+                    <div className="task-time">
+                      <Clock size={16} />
+                      <span>{task.dueTime ? formatTime(task.dueTime) : 'No time set'}</span>
+                    </div>
+                    
+                    <button 
+                      className="task-menu"
+                      onClick={() => navigate('/tasks')}
+                    >
+                      <MoreHorizontal size={20} />
+                    </button>
+                  </div>
+                ))
+              )}
               <button className="add-task-btn floating-add-btn" onClick={openAddTaskModal}>
                 <Plus size={16} />
               </button>

@@ -23,7 +23,7 @@ export function searchAll(query, tasks = [], habits = [], limit = 8) {
     const sTitle = scoreMatch(q, t.title)
     const sDesc = scoreMatch(q, t.description || '')
     const sCat = scoreMatch(q, t.category || '')
-    const score = Math.max(sTitle * 2, sDesc, sCat) // title weighs more
+    const score = Math.max(sTitle * 2, sDesc, sCat)
     if (score > 0) {
       results.push({
         id: `task-${t.id}`,
@@ -32,7 +32,7 @@ export function searchAll(query, tasks = [], habits = [], limit = 8) {
         title: t.title,
         subtitle: t.category ? `Task • ${t.category}` : 'Task',
         score,
-        route: '/tasks'
+        route: `/tasks?highlight=${encodeURIComponent(t.id)}` // deep-linkhighlight=${encodeURIComponent(t.id)}` // deep-link
       })
     }
   })
@@ -51,7 +51,7 @@ export function searchAll(query, tasks = [], habits = [], limit = 8) {
         title: h.title,
         subtitle: h.frequency ? `Habit • ${h.frequency}` : 'Habit',
         score,
-        route: '/habits'
+        route: `/habits?highlight=${encodeURIComponent(h.id)}` // deep-linkhighlight=${encodeURIComponent(h.id)}` // deep-link
       })
     }
   })

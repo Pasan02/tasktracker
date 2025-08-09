@@ -4,7 +4,9 @@ import { useTask } from '../context/TaskContext'
 import AddTaskModal from '../components/tasks/AddTaskModal'
 import EditTaskModal from '../components/tasks/EditTaskModal'
 import TaskOptionsModal from '../components/tasks/TaskOptionsModal'
+import { compareDateStr, parseDateOnly, startOfToday, addDays, isSameDayStr } from '../utils/date'
 import './Tasks.css'
+import { useSearchParams } from 'react-router-dom'
 
 const Tasks = () => {
   const { tasks, addTask, updateTask, deleteTask } = useTask()
@@ -19,6 +21,7 @@ const Tasks = () => {
     task: null,
     position: { top: 0, left: 0 }
   })
+  const [searchParams, setSearchParams] = useSearchParams()
 
   // Filter and Sort states
   const [activeFilters, setActiveFilters] = useState({
@@ -30,20 +33,15 @@ const Tasks = () => {
   const [sortOrder, setSortOrder] = useState('asc') // 'asc' or 'desc'
 
   // Helper function to format dates
-  const formatDateGroup = (date) => {
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    
-    const taskDate = new Date(date)
-    
-    if (taskDate.toDateString() === today.toDateString()) {
-      return 'today'
-    } else if (taskDate.toDateString() === tomorrow.toDateString()) {
-      return 'tomorrow'
-    } else {
-      return 'upcoming'
-    }
+  const formatDateGroup = (dateStr) => {
+    const today = startOfToday()
+    const tomorrow = addDays(today, 1)
+    const taskDate = parseDateOnly(dateStr)
+
+    if (!taskDate) return 'upcoming'
+    if (taskDate.getTime() === today.getTime()) return 'today'
+    if (taskDate.getTime() === tomorrow.getTime()) return 'tomorrow'
+    return 'upcoming'
   }
 
   // Apply filters to tasks
@@ -61,26 +59,28 @@ const Tasks = () => {
       
       // Due date filter
       if (activeFilters.dueDate !== 'all') {
-        const today = new Date()
-        const taskDate = new Date(task.dueDate)
-        
+        const today = startOfToday()
+        const taskDate = parseDateOnly(task.dueDate)
+        if (!taskDate) return false
+
         switch (activeFilters.dueDate) {
           case 'overdue':
-            if (taskDate >= today || task.status === 'completed') return false
+            if (task.status === 'completed') return false
+            if (!(taskDate < today)) return false
             break
           case 'today':
-            if (taskDate.toDateString() !== today.toDateString()) return false
+            if (taskDate.getTime() !== today.getTime()) return false
             break
-          case 'week':
-            const weekFromNow = new Date()
-            weekFromNow.setDate(today.getDate() + 7)
+          case 'week': {
+            const weekFromNow = addDays(today, 7)
             if (taskDate < today || taskDate > weekFromNow) return false
             break
-          case 'month':
-            const monthFromNow = new Date()
-            monthFromNow.setMonth(today.getMonth() + 1)
+          }
+          case 'month': {
+            const monthFromNow = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate())
             if (taskDate < today || taskDate > monthFromNow) return false
             break
+          }
           default:
             break
         }
@@ -97,12 +97,13 @@ const Tasks = () => {
       
       switch (activeSortBy) {
         case 'dueDate':
-          compareValue = new Date(a.dueDate) - new Date(b.dueDate)
+          compareValue = compareDateStr(a.dueDate, b.dueDate)
           break
-        case 'priority':
+        case 'priority': {
           const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 }
           compareValue = priorityOrder[b.priority] - priorityOrder[a.priority]
           break
+        }
         case 'title':
           compareValue = a.title.localeCompare(b.title)
           break
@@ -110,12 +111,11 @@ const Tasks = () => {
           compareValue = a.category.localeCompare(b.category)
           break
         case 'created':
-          compareValue = new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
-          break
         default:
           compareValue = 0
+          break
       }
-      
+
       return sortOrder === 'desc' ? -compareValue : compareValue
     })
   }
@@ -339,6 +339,20 @@ const Tasks = () => {
     }
   }, [filterOpen, sortOpen])
 
+  useEffect(() => {
+    const id = searchParams.get('highlight')
+    if (!id) return
+    const el = document.querySelector(`[data-task-id="${CSS.escape(id)}"]`)
+    if (el) {
+      el.classList.add('pulse-highlight')
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => el.classList.remove('pulse-highlight'), 2000)
+    }
+    const next = new URLSearchParams(searchParams)
+    next.delete('highlight')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, tasks, setSearchParams])
+
   return (
     <div className="tasks-page">
       <div className="tasks-header">
@@ -489,7 +503,11 @@ const Tasks = () => {
             
             <div className="task-day-card">
               {taskList.map(task => (
-                <div key={task.id} className="task-item">
+                <div 
+                  key={task.id} 
+                  className="task-item"
+                  data-task-id={task.id}   // highlight hook
+                >
                   <button 
                     className={`task-checkbox ${task.status === 'completed' ? 'completed' : ''}`}
                     onClick={() => handleTaskToggle(task.id)}

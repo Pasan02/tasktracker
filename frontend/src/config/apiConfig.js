@@ -43,6 +43,7 @@ export const ENDPOINTS = {
     BY_ID: (id) => `/habits/${id}`,
     BY_USER: (userId) => `/habits/user/${userId}`,
     MARK_COMPLETE: (habitId) => `/habits/${habitId}/complete`,
+    TOGGLE_COMPLETE: (habitId) => `/habits/${habitId}/toggle-complete`, // added
     COMPLETIONS: '/habits/completions'
   }
 };

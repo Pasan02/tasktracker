@@ -5,6 +5,7 @@ import EditHabitModal from '../components/habits/EditHabitModal'
 import HabitOptionsModal from '../components/habits/HabitOptionsModal'
 import { useHabit } from '../context/HabitContext'
 import { useNotification } from '../context/NotificationContext'
+import { useSearchParams } from 'react-router-dom'
 import './Habits.css'
 
 const Habits = () => {
@@ -39,6 +40,7 @@ const Habits = () => {
     habit: null,
     position: { top: 0, left: 0 }
   })
+  const [searchParams, setSearchParams] = useSearchParams()
 
   // Format time for timer display
   const formatTime = (minutes, seconds) => {
@@ -360,6 +362,20 @@ const Habits = () => {
     })
   }
 
+  useEffect(() => {
+    const id = searchParams.get('highlight')
+    if (!id) return
+    const el = document.querySelector(`[data-habit-id="${CSS.escape(id)}"]`)
+    if (el) {
+      el.classList.add('pulse-highlight')
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => el.classList.remove('pulse-highlight'), 2000)
+    }
+    const next = new URLSearchParams(searchParams)
+    next.delete('highlight')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, habits, setSearchParams])
+
   if (isLoading) {
     return (
       <div className="habits-page">
@@ -492,7 +508,11 @@ const Habits = () => {
                   const categoryInfo = getCategoryInfo(habit.category)
                   
                   return (
-                    <div key={habit.id} className="habit-item">
+                    <div 
+                      key={habit.id} 
+                      className="habit-item"
+                      data-habit-id={habit.id}   // highlight hook
+                    >
                       <button 
                         className="habit-checkbox"
                         onClick={() => handleHabitToggle(habit.id)}
@@ -572,7 +592,11 @@ const Habits = () => {
                   const categoryInfo = getCategoryInfo(habit.category)
                   
                   return (
-                    <div key={habit.id} className={`habit-item ${!isScheduledToday ? 'not-scheduled' : ''}`}>
+                    <div 
+                      key={habit.id} 
+                      className={`habit-item ${!isScheduledToday ? 'not-scheduled' : ''}`}
+                      data-habit-id={habit.id}   // highlight hook
+                    >
                       <button 
                         className="habit-checkbox"
                         onClick={() => handleHabitToggle(habit.id)}

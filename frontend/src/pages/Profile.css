@@ -160,7 +160,7 @@
   border: 1px solid var(--border-light);
   border-radius: 12px;
   font-size: 14px;
-  background: white;
+  background: var(--bg-primary);             /* use themed surface */
   transition: all 0.2s ease;
   text-align: left; /* Left align input text */
 }

@@ -135,35 +135,33 @@ export const HabitProvider = ({ children }) => {
   const markHabitComplete = async (habitId, date = null) => {
     try {
       const completionDate = date || new Date().toISOString().split('T')[0]
-      
-      console.log('Toggling habit completion:', habitId, completionDate)
-      
-      // Check if already completed
-      const existingCompletion = habitCompletions.find(
-        completion => completion.habitId == habitId && completion.date === completionDate
-      )
-      
-      if (existingCompletion) {
-        // If already completed, remove it
-        await habitService.deleteHabitCompletion(existingCompletion.id)
-        const updatedCompletions = habitCompletions.filter(
-          completion => !(completion.habitId == habitId && completion.date === completionDate)
+      console.log('Toggling habit completion (API):', habitId, completionDate)
+
+      const result = await habitService.toggleHabitCompletion(habitId, completionDate)
+
+      if (result.action === 'removed') {
+        const updated = habitCompletions.filter(
+          c => !(c.habitId == habitId && c.date === (result.date || completionDate))
         )
-        setHabitCompletions(updatedCompletions)
-        saveCompletions(updatedCompletions)
+        setHabitCompletions(updated)
+        saveCompletions(updated)
         console.log('Habit completion removed')
-      } else {
-        // If not completed, add a completion
-        const newCompletion = await habitService.markHabitComplete(habitId, completionDate)
-        if (!newCompletion.removed) {
-          const updatedCompletions = [...habitCompletions, newCompletion]
-          setHabitCompletions(updatedCompletions)
-          saveCompletions(updatedCompletions)
-          console.log('Habit completion added:', newCompletion)
+      } else if (result.action === 'added' && result.completion) {
+        const normalized = {
+          id: result.completion.id,
+          habitId: result.completion.habitId,
+          date: result.completion.date,
+          completed: true
         }
+        const updated = [...habitCompletions, normalized]
+        setHabitCompletions(updated)
+        saveCompletions(updated)
+        console.log('Habit completion added:', normalized)
+      } else {
+        console.warn('Unexpected toggle response:', result)
       }
     } catch (error) {
-      console.error('Error marking habit completion:', error)
+      console.error('Error toggling habit completion:', error)
       setError('Failed to update habit completion')
       throw error
     }

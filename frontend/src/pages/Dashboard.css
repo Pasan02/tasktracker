@@ -557,6 +557,29 @@
   margin-top: 4px;
 }
 
+/* Today's Tasks card container (matches Tasks page look) */
+.dashboard .task-day-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  /* anchor the floating add button inside the card */
+  position: relative;
+  padding-bottom: 64px; /* leave room for the button */
+}
+
+/* Pin the add button to the bottom-right inside the card */
+.dashboard .task-day-card .floating-add-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .dashboard-grid {
@@ -598,5 +621,10 @@
   
   .calendar-section {
     padding: 20px;
+  }
+
+  /* extra room on small screens */
+  .dashboard .task-day-card {
+    padding-bottom: 72px;
   }
 }

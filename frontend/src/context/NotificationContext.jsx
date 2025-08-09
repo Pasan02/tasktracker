@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useTask } from './TaskContext'
 import { useHabit } from './HabitContext'
 import { parseISO } from 'date-fns'
+import { parseDateOnly, startOfToday } from '../utils/date'
 
 const NotificationContext = createContext(null)
 
@@ -9,6 +10,24 @@ export const NotificationProvider = ({ children }) => {
   const { tasks } = useTask()
   const { getTodaysHabits, isHabitCompletedOnDate } = useHabit()
   const [notifications, setNotifications] = useState([])
+
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('notifications')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) setNotifications(parsed)
+      }
+    } catch (_) {}
+  }, [])
+
+  // Persist to localStorage whenever notifications change
+  useEffect(() => {
+    try {
+      localStorage.setItem('notifications', JSON.stringify(notifications))
+    } catch (_) {}
+  }, [notifications])
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], [])
 
@@ -36,25 +55,30 @@ export const NotificationProvider = ({ children }) => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
   }
 
+  const clearAll = () => {
+    setNotifications([])
+  }
+
   // Build notifications from tasks and habits
   useEffect(() => {
     const now = new Date()
+    const todayOnly = startOfToday()
     const list = []
 
     // Task: overdue
     tasks.filter(t => t.dueDate && t.status !== 'completed').forEach(t => {
       try {
-        const dueDate = parseISO(t.dueDate)
         let isOverdue = false
 
         if (t.dueTime) {
-          const due = new Date(`${t.dueDate}T${t.dueTime}:00`)
+          // Construct local date-time from strings safely
+          const [y, m, d] = t.dueDate.split('-').map(Number)
+          const [hh, mm] = t.dueTime.split(':').map(Number)
+          const due = new Date(y, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0)
           isOverdue = due < now
         } else {
-          // All-day: overdue if date is before today
-          const taskDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate())
-          const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-          isOverdue = taskDateOnly < todayOnly
+          const taskDateOnly = parseDateOnly(t.dueDate)
+          isOverdue = taskDateOnly && taskDateOnly < todayOnly
         }
 
         if (isOverdue) {
@@ -71,9 +95,11 @@ export const NotificationProvider = ({ children }) => {
     })
 
     // Task: due soon (next 2 hours)
-    tasks.filter(t => t.dueDate === todayStr && t.dueTime && t.status !== 'completed').forEach(t => {
+    tasks.filter(t => t.dueDate && t.dueTime && t.status !== 'completed').forEach(t => {
       try {
-        const due = new Date(`${t.dueDate}T${t.dueTime}:00`)
+        const [y, m, d] = t.dueDate.split('-').map(Number)
+        const [hh, mm] = t.dueTime.split(':').map(Number)
+        const due = new Date(y, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0)
         const diffMin = Math.round((due - now) / 60000)
         if (diffMin > 0 && diffMin <= 120) {
           list.push({
@@ -110,9 +136,7 @@ export const NotificationProvider = ({ children }) => {
     setNotifications(prev => {
       const prevById = new Map(prev.map(n => [n.id, n]))
       const merged = list.map(n => prevById.get(n.id) ? { ...n, read: prevById.get(n.id).read } : n)
-      // Also keep any custom notifications previously added (e.g., timer complete)
       const custom = prev.filter(n => !merged.find(m => m.id === n.id))
-      // Sort newest first
       return [...custom, ...merged].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     })
   }, [tasks, getTodaysHabits, isHabitCompletedOnDate, todayStr])
@@ -120,7 +144,7 @@ export const NotificationProvider = ({ children }) => {
   const unreadCount = notifications.filter(n => !n.read).length
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAsRead, markAllRead }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAsRead, markAllRead, clearAll }}>
       {children}
     </NotificationContext.Provider>
   )

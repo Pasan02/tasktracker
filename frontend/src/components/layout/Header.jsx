@@ -9,7 +9,7 @@ import { Sun, Moon, Bell, Search, User, Sparkles, Settings, LogOut, ChevronDown 
 
 const Header = () => {
   const { user, logout } = useAuth()
-  const { notifications, unreadCount, markAsRead, markAllRead } = useNotification()
+  const { notifications, unreadCount, markAsRead, markAllRead, clearAll } = useNotification()
   const { tasks } = useTask()
   const { habits } = useHabit()
   const navigate = useNavigate()
@@ -218,7 +218,10 @@ const Header = () => {
             <div className="notifications-dropdown">
               <div className="notifications-header">
                 <h3>Notifications</h3>
-                <button className="mark-all-read" onClick={markAllRead}>Mark all as read</button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="mark-all-read" onClick={markAllRead}>Mark all as read</button>
+                  <button className="mark-all-read" onClick={clearAll}>Clear all</button>
+                </div>
               </div>
               <div className="notifications-list">
                 {notifications.length === 0 ? (

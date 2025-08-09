@@ -247,65 +247,49 @@ const habitService = {
    * @param {string} date - Date in YYYY-MM-DD format
    * @returns {Promise} - Completion data
    */
-  markHabitComplete: async (habitId, date = null) => {
+  toggleHabitCompletion: async (habitId, date) => {
     try {
-      const completionDate = date || new Date().toISOString().split('T')[0];
-      
-      console.log('Toggling habit completion:', habitId, 'for date:', completionDate);
-
-      // Real API call with toggle behavior
-      const response = await apiClient.post(`/habits/${habitId}/toggle-complete?date=${completionDate}`);
-      
-      console.log('Habit completion toggled:', response);
-      
-      // Return normalized completion data
-      if (response.action === 'added') {
-        return {
-          id: response.completion.id,
-          habitId: habitId,
-          date: completionDate,
-          completed: true
-        };
-      } else {
-        return {
-          removed: true,
-          date: completionDate
-        };
+      const param = date ? `?date=${encodeURIComponent(date)}` : ''
+      const resp = await apiClient.post(`/habits/${habitId}/toggle-complete${param}`)
+      // Backend returns: { action: 'added'|'removed', completion?, date? }
+      if (resp.action === 'removed') {
+        return { action: 'removed', date: resp.date }
       }
+      if (resp.action === 'added' && resp.completion) {
+        const c = resp.completion
+        return {
+          action: 'added',
+          completion: {
+            id: c.id,
+            habitId: c.habitId,
+            date: c.completionDate || c.date,
+            completed: true
+          }
+        }
+      }
+      return resp
     } catch (error) {
-      console.error('Mark habit complete error:', error);
-      
-      // Fix: Ensure completionDate is defined in fallback code
-      const completionDate = date || new Date().toISOString().split('T')[0];
-      
-      // Fallback to localStorage
-      const savedCompletions = localStorage.getItem('habitCompletions');
-      const completions = savedCompletions ? JSON.parse(savedCompletions) : [];
-      
-      // Check if already completed for this date
-      const existingCompletion = completions.find(
-        c => c.habitId == habitId && c.date === completionDate
-      );
-      
-      if (existingCompletion) {
-        // If already completed, remove the completion (toggle behavior)
-        const updatedCompletions = completions.filter(
-          c => !(c.habitId == habitId && c.date === completionDate)
-        );
-        localStorage.setItem('habitCompletions', JSON.stringify(updatedCompletions));
-        return { removed: true, date: completionDate };
+      console.error('Toggle habit completion error:', error)
+      // Fallback to localStorage (toggle behavior)
+      const completionDate = date || new Date().toISOString().split('T')[0]
+      const saved = localStorage.getItem('habitCompletions')
+      const completions = saved ? JSON.parse(saved) : []
+
+      const existing = completions.find(c => c.habitId == habitId && c.date === completionDate)
+      if (existing) {
+        const updated = completions.filter(c => !(c.habitId == habitId && c.date === completionDate))
+        localStorage.setItem('habitCompletions', JSON.stringify(updated))
+        return { action: 'removed', date: completionDate }
       } else {
-        // Add new completion
         const newCompletion = {
           id: `completion-${Date.now()}`,
-          habitId: habitId,
+          habitId,
           date: completionDate,
           completed: true
-        };
-        
-        completions.push(newCompletion);
-        localStorage.setItem('habitCompletions', JSON.stringify(completions));
-        return newCompletion;
+        }
+        const updated = [newCompletion, ...completions]
+        localStorage.setItem('habitCompletions', JSON.stringify(updated))
+        return { action: 'added', completion: newCompletion }
       }
     }
   },
