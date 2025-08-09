@@ -4,6 +4,7 @@ import AddHabitModal from '../components/habits/AddHabitModal'
 import EditHabitModal from '../components/habits/EditHabitModal'
 import HabitOptionsModal from '../components/habits/HabitOptionsModal'
 import { useHabit } from '../context/HabitContext'
+import { useNotification } from '../context/NotificationContext'
 import './Habits.css'
 
 const Habits = () => {
@@ -20,6 +21,8 @@ const Habits = () => {
     updateHabit,
     deleteHabit
   } = useHabit()
+  
+  const { addNotification } = useNotification()
   
   const [timerMinutes, setTimerMinutes] = useState(25)
   const [timerSeconds, setTimerSeconds] = useState(0)
@@ -214,7 +217,14 @@ const Habits = () => {
         icon: '/favicon.ico'
       })
     }
-    
+
+    // In-app notification
+    addNotification({
+      title: 'Timer complete',
+      description: `${timerModes[timerMode].label} session finished`,
+      type: 'success'
+    })
+
     if (timerMode === 'focus') {
       setCompletedPomodoros(prev => prev + 1)
       const nextMode = completedPomodoros % 4 === 3 ? 'long-break' : 'short-break'

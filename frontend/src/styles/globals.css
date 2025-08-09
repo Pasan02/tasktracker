@@ -350,3 +350,47 @@ button {
   background: var(--primary-teal);
   color: white;
 }
+
+/* Theme: Dark */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg-primary: #0f172a;   /* card/page surfaces */
+  --bg-secondary: #111827; /* subtle surface */
+  --bg-tertiary: #0b1220;
+
+  /* Text */
+  --text-primary: #e5e7eb;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-muted: #94a3b8;
+
+  /* Borders */
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.16);
+
+  /* Whites/grays used by components */
+  --white: #0f172a;
+  --gray-50: rgba(255, 255, 255, 0.04);
+  --gray-100: rgba(255, 255, 255, 0.06);
+  --gray-200: rgba(255, 255, 255, 0.08);
+  --gray-300: rgba(255, 255, 255, 0.12);
+  --gray-400: rgba(255, 255, 255, 0.18);
+
+  /* Keep brand colors as-is (primary-teal, etc.) so accents pop on dark */
+}
+
+/* Smooth theme transitions for background/text */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Dark scrollbars */
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+}

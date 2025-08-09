@@ -329,17 +329,12 @@
   margin-bottom: 24px;
 }
 
-.calendar-header h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
+/* Ensure spacing when using controls without the inner header */
 .calendar-controls {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 24px; /* added */
 }
 
 .calendar-date {

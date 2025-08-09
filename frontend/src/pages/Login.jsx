@@ -67,8 +67,8 @@ const Login = () => {
       <div className="auth-left login-left">
         <div className="auth-hero">
           <div className="auth-hero-content">
-            <h1 className="auth-hero-title">Welcome to Wellife</h1>
-            <p className="auth-hero-subtitle">Manage your tasks and projects efficiently</p>
+            <h1 className="auth-hero-title">Welcome to TaskFlow</h1>
+            <p className="auth-hero-subtitle">Manage your tasks and habits efficiently</p>
             
             <div className="auth-hero-image">
               <div className="hero-mockup login-mockup">
@@ -89,7 +89,7 @@ const Login = () => {
       <div className="auth-right">
         <div className="auth-form-container">
           <div className="auth-form-header">
-            <h2>Sign in to Wellife</h2>
+            <h2>Sign in to TaskFlow</h2>
             <p>Start managing your tasks efficiently</p>
           </div>
 
@@ -137,7 +137,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="form-row">
+            <div className="form-row checkbox-row">
               <label className="checkbox-label">
                 <input
                   type="checkbox"

@@ -309,18 +309,21 @@ const Dashboard = () => {
 
         {/* Calendar Section - Real Upcoming Tasks */}
         <div className="dashboard-right">
+          {/* Add a section header to align with Today's Tasks */}
+          <div className="section-header">
+            <h2>Upcoming Schedule</h2>
+          </div>
+
           <div className="calendar-section">
-            <div className="calendar-header">
-              <h3>Upcoming Schedule</h3>
-              <div className="calendar-controls">
-                <div className="calendar-date">
-                  <CalendarIcon size={16} />
-                  <span>{format(new Date(), 'dd MMM')}</span>
-                </div>
-                <button className="calendar-menu" onClick={() => navigate('/calendar')}>
-                  <ArrowRight size={16} />
-                </button>
+            {/* Keep only controls inside the card */}
+            <div className="calendar-controls">
+              <div className="calendar-date">
+                <CalendarIcon size={16} />
+                <span>{format(new Date(), 'dd MMM')}</span>
               </div>
+              <button className="calendar-menu" onClick={() => navigate('/calendar')}>
+                <ArrowRight size={16} />
+              </button>
             </div>
 
             <div className="calendar-events">

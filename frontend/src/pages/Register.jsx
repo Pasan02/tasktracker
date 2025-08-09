@@ -73,7 +73,7 @@ const Register = () => {
       <div className="auth-left">
         <div className="auth-hero">
           <div className="auth-hero-content">
-            <h1 className="auth-hero-title">Wellife</h1>
+            <h1 className="auth-hero-title">TaskFlow</h1>
             <p className="auth-hero-subtitle">Smart Task and Project Management Platform</p>
             
             <div className="auth-features">

@@ -7,9 +7,10 @@ import Tasks from './pages/Tasks'
 import Habits from './pages/Habits'
 import Calendar from './pages/Calendar'
 import Profile from './pages/Profile'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext' // <-- add useAuth
 import { TaskProvider } from './context/TaskContext'
 import { HabitProvider } from './context/HabitContext'
+import { NotificationProvider } from './context/NotificationContext'
 import './styles/globals.css'
 
 function AppContent() {
@@ -52,7 +53,9 @@ function App() {
     <AuthProvider>
       <TaskProvider>
         <HabitProvider>
-          <AppContent />
+          <NotificationProvider>
+            <AppContent />
+          </NotificationProvider>
         </HabitProvider>
       </TaskProvider>
     </AuthProvider>
